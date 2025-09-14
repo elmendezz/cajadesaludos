@@ -1,0 +1,9 @@
+// File: vercel.json
+{
+  "version": 2,
+  "functions": {
+    "api/greetings.js": {
+      "runtime": "nodejs"
+    }
+  }
+}
