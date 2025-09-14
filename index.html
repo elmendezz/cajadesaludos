@@ -236,20 +236,23 @@
                 if (greeting.isGlowing) {
                     greetingCard.classList.add('glowing');
                 }
+                const timestamp = greeting.timestamp && greeting.timestamp.toDate ? greeting.timestamp.toDate().toLocaleString() : 'Fecha no disponible';
                 greetingCard.innerHTML = `
                     <p class="author">${greeting.name}</p>
                     <p>${greeting.message}</p>
-                    <p class="timestamp">${new Date(greeting.timestamp.seconds * 1000).toLocaleString()}</p>
+                    <p class="timestamp">${timestamp}</p>
                 `;
                 greetingsContainer.appendChild(greetingCard);
             });
         }
         
         submitBtn.addEventListener('click', async () => {
+            console.log("Click del botón 'Enviar saludo' detectado.");
             const name = nameInput.value.trim();
             const message = messageInput.value.trim();
 
             if (!name || !message) {
+                console.log("Error: Nombre o mensaje están vacíos.");
                 alert('Por favor, llena todos los campos.');
                 return;
             }
@@ -261,11 +264,12 @@
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     isGlowing: false
                 });
+                console.log("Saludo enviado con éxito.");
                 nameInput.value = '';
                 messageInput.value = '';
             } catch (e) {
                 console.error("Error al agregar documento: ", e);
-                alert("Ocurrió un error al enviar el saludo. Intenta de nuevo.");
+                alert("Ocurrió un error al enviar el saludo. Revisa la consola para más detalles.");
             }
         });
 
@@ -297,7 +301,7 @@
                         alert("¡Mensaje de admin con glow enviado!");
                     } catch (e) {
                         console.error("Error al enviar el mensaje de admin: ", e);
-                        alert("Ocurrió un error al enviar el mensaje de admin. Intenta de nuevo.");
+                        alert("Ocurrió un error al enviar el mensaje de admin. Revisa la consola para más detalles.");
                     }
                 } else if (action !== null) {
                     alert('Acción no reconocida. (Solo se acepta "borrar" o "glow")');
