@@ -3,7 +3,7 @@
   "version": 2,
   "functions": {
     "api/greetings.js": {
-      "runtime": "nodejs"
+      "runtime": "nodejs18.0"
     }
   }
 }
