@@ -1,4 +1,7 @@
-
+<!-- File: index.html
+     Frontend (GitHub Pages). Reemplaza API_BASE con la URL de tu proyecto en Vercel.
+     No pongas tokens en este archivo.
+-->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -167,6 +170,12 @@
             text-align: right;
             margin-top: 10px;
         }
+
+        .small {
+            font-size: 0.85em;
+            color: #bbb;
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
@@ -183,94 +192,96 @@
             <textarea id="messageInput" placeholder="Tu mensaje..." rows="4" required></textarea>
             <button id="submitBtn">Enviar saludo</button>
             <button id="adminBtn">Admin Menu</button>
+            <div class="small">NOTA: este frontend usa un backend en Vercel para actualizar el Gist (no expone tokens).</div>
         </section>
 
         <section class="greetings-section">
             <h2>Saludos de la comunidad</h2>
-            <div id="greetingsContainer">
-                </div>
+            <div id="greetingsContainer"></div>
         </section>
     </div>
 
     <script>
+        // ======= CONFIG =======
+        // Cambia esto por la URL de tu despliegue en Vercel (sin barra final)
+        const API_BASE = 'https://TU-PROYECTO.vercel.app';
+        // Nombre del archivo dentro del gist (debe existir greetings.json)
+        const GIST_FILENAME = 'greetings.json';
+        const ADMIN_PIN = '26435';
+        // ======================
+
         const nameInput = document.getElementById('nameInput');
         const messageInput = document.getElementById('messageInput');
         const submitBtn = document.getElementById('submitBtn');
         const adminBtn = document.getElementById('adminBtn');
         const greetingsContainer = document.getElementById('greetingsContainer');
-        const ADMIN_PIN = '26435';
-
-        // !!!!!!!!!!!! IMPORTANTE: REEMPLAZA ESTOS VALORES !!!!!!!!!!!!
-        // TOKEN: TU TOKEN PERSONAL DE GITHUB (con permiso de 'gist')
-        const GITHUB_TOKEN = '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'; 
-        // GIST_ID: El ID del Gist que creaste (el código largo en la URL)
-        const GIST_ID = 'ef162d0104adac1b169cf5778d2a4183'; 
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         async function fetchGreetings() {
             try {
-                const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
-                const data = await response.json();
-                const fileContent = data.files['greetings.json'].content;
-                const greetings = JSON.parse(fileContent);
-                renderGreetings(greetings);
+                const response = await fetch(`${API_BASE}/api/greetings`);
+                if (!response.ok) {
+                    const txt = await response.text().catch(() => '');
+                    throw new Error('HTTP ' + response.status + ' - ' + txt);
+                }
+                const greetings = await response.json();
+                renderGreetings(Array.isArray(greetings) ? greetings : []);
             } catch (e) {
                 console.error("Error al cargar los saludos: ", e);
-                alert("Ocurrió un error al cargar los saludos. Revisa la consola y tu GIST_ID.");
+                alert("Ocurrió un error al cargar los saludos. Revisa la consola y tu configuración de Vercel.");
             }
         }
 
         async function updateGreetings(newGreetings) {
             try {
-                const url = `https://api.github.com/gists/${GIST_ID}`;
-                const body = {
-                    files: {
-                        'greetings.json': {
-                            content: JSON.stringify(newGreetings, null, 2)
-                        }
-                    }
-                };
-                const headers = {
-                    'Authorization': `token ${GITHUB_TOKEN}`,
-                    'Content-Type': 'application/json'
-                };
-
-                const response = await fetch(url, {
-                    method: 'PATCH', // Usamos PATCH para actualizar
-                    headers: headers,
-                    body: JSON.stringify(body)
+                const response = await fetch(`${API_BASE}/api/greetings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ greetings: newGreetings })
                 });
 
+                const result = await response.json().catch(() => ({}));
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || 'Error al actualizar el Gist');
+                    throw new Error(result.message || JSON.stringify(result));
                 }
+                // Actualizar lista en pantalla
                 fetchGreetings();
             } catch (e) {
                 console.error("Error al actualizar el Gist: ", e);
-                alert("Ocurrió un error al guardar el saludo. Revisa tu GITHUB_TOKEN y los permisos.");
+                alert("Ocurrió un error al guardar el saludo. Revisa la consola y la variable GITHUB_TOKEN en Vercel.");
             }
         }
 
         function renderGreetings(greetings) {
             greetingsContainer.innerHTML = '';
-            const sortedGreetings = greetings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const sortedGreetings = greetings.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
             sortedGreetings.forEach(greeting => {
                 const greetingCard = document.createElement('div');
                 greetingCard.classList.add('greeting-card');
                 if (greeting.isGlowing) {
                     greetingCard.classList.add('glowing');
                 }
-                const timestamp = new Date(greeting.timestamp).toLocaleString();
+                const timestamp = greeting.timestamp ? new Date(greeting.timestamp).toLocaleString() : '';
                 greetingCard.innerHTML = `
-                    <p class="author">${greeting.name}</p>
-                    <p>${greeting.message}</p>
+                    <p class="author">${escapeHtml(greeting.name || 'Anónimo')}</p>
+                    <p>${escapeHtml(greeting.message || '')}</p>
                     <p class="timestamp">${timestamp}</p>
                 `;
                 greetingsContainer.appendChild(greetingCard);
             });
         }
-        
+
+        // Sanitize básico para evitar inyección en el DOM
+        function escapeHtml(str) {
+            return String(str)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
         submitBtn.addEventListener('click', async () => {
             const name = nameInput.value.trim();
             const message = messageInput.value.trim();
@@ -281,11 +292,12 @@
             }
 
             try {
-                const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
-                const data = await response.json();
-                const fileContent = data.files['greetings.json'].content;
-                const greetings = JSON.parse(fileContent);
+                // 1) obtener la lista actual desde el backend
+                const resp = await fetch(`${API_BASE}/api/greetings`);
+                if (!resp.ok) throw new Error('No se pudo obtener saludos actuales');
+                const greetings = await resp.json();
 
+                // 2) agregar el nuevo saludo
                 const newGreeting = {
                     name,
                     message,
@@ -293,14 +305,16 @@
                     isGlowing: false
                 };
                 greetings.push(newGreeting);
-                
+
+                // 3) enviar la lista actualizada al backend
                 await updateGreetings(greetings);
-                
+
+                // limpiar campos
                 nameInput.value = '';
                 messageInput.value = '';
             } catch (e) {
                 console.error("Error al enviar el saludo: ", e);
-                alert("Ocurrió un error al enviar el saludo. Revisa tu GIST_ID y el archivo JSON.");
+                alert("Ocurrió un error al enviar el saludo. Revisa la consola.");
             }
         });
 
@@ -316,10 +330,9 @@
                     }
                 } else if (action && action.toLowerCase() === 'glow') {
                     try {
-                        const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
-                        const data = await response.json();
-                        const fileContent = data.files['greetings.json'].content;
-                        const greetings = JSON.parse(fileContent);
+                        const resp = await fetch(`${API_BASE}/api/greetings`);
+                        if (!resp.ok) throw new Error('No se pudo obtener saludos actuales');
+                        const greetings = await resp.json();
 
                         const newAdminGreeting = {
                             name: "elmendezz",
@@ -345,5 +358,4 @@
         window.onload = fetchGreetings;
     </script>
 </body>
-
 </html>
