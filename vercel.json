@@ -1,9 +1,8 @@
-
 {
   "version": 2,
   "functions": {
     "api/greetings.js": {
-      "runtime": "nodejs@18.0"
+      "runtime": "@vercel/node@18"
     }
   }
 }
