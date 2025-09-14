@@ -136,6 +136,18 @@
         .greeting-card:hover {
             transform: scale(1.02);
         }
+        
+        .greeting-card.glowing {
+            background-color: #1c274a;
+            border-color: #3e66f0;
+            box-shadow: 0 0 15px rgba(62, 102, 240, 0.8);
+            animation: pulse-glow 2s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 10px rgba(62, 102, 240, 0.5); }
+            to { box-shadow: 0 0 20px rgba(62, 102, 240, 1.0); }
+        }
 
         .greeting-card p {
             margin: 0;
@@ -194,7 +206,6 @@
         const greetingsContainer = document.getElementById('greetingsContainer');
         const ADMIN_PIN = '26435';
 
-        // Credenciales de tu proyecto de Firebase
         const firebaseConfig = {
           apiKey: "AIzaSyBSlpFVyWiENlRbcmnon6jINaiLgFIN_8M",
           authDomain: "cajita-de-saludos.firebaseapp.com",
@@ -205,15 +216,14 @@
           measurementId: "G-GPD7G2W75R"
         };
         
-        // Inicializa Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Escucha los cambios en la base de datos en tiempo real
         db.collection("greetings").orderBy("timestamp", "desc").onSnapshot((querySnapshot) => {
             const greetings = [];
             querySnapshot.forEach((doc) => {
-                greetings.push(doc.data());
+                const data = doc.data();
+                greetings.push({ ...data, id: doc.id });
             });
             renderGreetings(greetings);
         });
@@ -223,22 +233,48 @@
             greetings.forEach(greeting => {
                 const greetingCard = document.createElement('div');
                 greetingCard.classList.add('greeting-card');
+                if (greeting.isGlowing) {
+                    greetingCard.classList.add('glowing');
+                }
                 greetingCard.innerHTML = `
                     <p class="author">${greeting.name}</p>
                     <p>${greeting.message}</p>
-                    <p class="timestamp">${greeting.timestamp.toDate().toLocaleString()}</p>
+                    <p class="timestamp">${new Date(greeting.timestamp.seconds * 1000).toLocaleString()}</p>
                 `;
                 greetingsContainer.appendChild(greetingCard);
             });
         }
+        
+        submitBtn.addEventListener('click', async () => {
+            const name = nameInput.value.trim();
+            const message = messageInput.value.trim();
 
-        async function showAdminMenu() {
+            if (!name || !message) {
+                alert('Por favor, llena todos los campos.');
+                return;
+            }
+
+            try {
+                await db.collection("greetings").add({
+                    name: name,
+                    message: message,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    isGlowing: false
+                });
+                nameInput.value = '';
+                messageInput.value = '';
+            } catch (e) {
+                console.error("Error al agregar documento: ", e);
+                alert("Ocurrió un error al enviar el saludo. Intenta de nuevo.");
+            }
+        });
+
+        adminBtn.addEventListener('click', async () => {
             const pin = prompt('Ingresa el PIN de administrador:');
             if (pin === ADMIN_PIN) {
-                const action = prompt('PIN correcto. ¿Qué deseas hacer? (escribe "borrar" para borrar todos los saludos)');
+                const action = prompt('PIN correcto. ¿Qué deseas hacer? (escribe "borrar" o "glow")');
                 if (action && action.toLowerCase() === 'borrar') {
                     if (confirm('¿Estás seguro de que quieres borrar todos los saludos?')) {
-                        // Borrar todos los documentos de la colección
                         const greetingsRef = db.collection('greetings');
                         const query = await greetingsRef.get();
                         
@@ -250,37 +286,27 @@
                         await batch.commit();
                         alert('Todos los saludos han sido borrados.');
                     }
-                } else {
-                    alert('Acción no reconocida.');
+                } else if (action && action.toLowerCase() === 'glow') {
+                    try {
+                        await db.collection("greetings").add({
+                            name: "elmendezz",
+                            message: "¡Saludos de parte del admin! 😎",
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                            isGlowing: true
+                        });
+                        alert("¡Mensaje de admin con glow enviado!");
+                    } catch (e) {
+                        console.error("Error al enviar el mensaje de admin: ", e);
+                        alert("Ocurrió un error al enviar el mensaje de admin. Intenta de nuevo.");
+                    }
+                } else if (action !== null) {
+                    alert('Acción no reconocida. (Solo se acepta "borrar" o "glow")');
                 }
             } else if (pin !== null) {
                 alert('PIN incorrecto. Acceso denegado.');
             }
-        }
-
-        submitBtn.addEventListener('click', async () => {
-            const name = nameInput.value.trim();
-            const message = messageInput.value.trim();
-
-            if (name && message) {
-                try {
-                    await db.collection("greetings").add({
-                        name: name,
-                        message: message,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    nameInput.value = '';
-                    messageInput.value = '';
-                } catch (e) {
-                    console.error("Error al agregar documento: ", e);
-                    alert("Ocurrió un error al enviar el saludo. Intenta de nuevo.");
-                }
-            } else {
-                alert('Por favor, llena todos los campos.');
-            }
         });
 
-        adminBtn.addEventListener('click', showAdminMenu);
     </script>
 </body>
 </html>
