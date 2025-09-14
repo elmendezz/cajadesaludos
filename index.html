@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cajita De Saludos - elmendezz</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            background-image: radial-gradient(circle, rgba(62, 102, 240, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #222;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid #333;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid #3e66f0;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+
+        header h1 {
+            font-size: 2em;
+            color: #fff;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(62, 102, 240, 0.5);
+        }
+
+        .form-section, .greetings-section {
+            background-color: #282828;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-section h2, .greetings-section h2 {
+            color: #3e66f0;
+            font-size: 1.5em;
+            margin-top: 0;
+            border-bottom: 2px solid #3e66f0;
+            padding-bottom: 5px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background-color: #333;
+            border: 1px solid #555;
+            color: #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #3e66f0;
+            box-shadow: 0 0 0 3px rgba(62, 102, 240, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3e66f0;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #2a4ac8;
+            transform: translateY(-2px);
+        }
+        
+        #adminBtn {
+            margin-top: 10px;
+            background-color: #555;
+        }
+        
+        #adminBtn:hover {
+            background-color: #444;
+        }
+
+        #greetingsContainer {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .greeting-card {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #3e66f0;
+            transition: transform 0.2s ease;
+        }
+
+        .greeting-card:hover {
+            transform: scale(1.02);
+        }
+
+        .greeting-card p {
+            margin: 0;
+            font-size: 0.95em;
+        }
+
+        .greeting-card .author {
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .greeting-card .timestamp {
+            font-size: 0.75em;
+            color: #999;
+            text-align: right;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <img src="logo.jpg" alt="Logo de la página">
+            <h1>Cajita De Saludos</h1>
+        </header>
+
+        <section class="form-section">
+            <h2>Escribe tu saludo</h2>
+            <input type="text" id="nameInput" placeholder="Tu nombre" required>
+            <textarea id="messageInput" placeholder="Tu mensaje..." rows="4" required></textarea>
+            <button id="submitBtn">Enviar saludo</button>
+            <button id="adminBtn">Admin Menu</button>
+        </section>
+
+        <section class="greetings-section">
+            <h2>Saludos de la comunidad</h2>
+            <div id="greetingsContainer">
+                </div>
+        </section>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+
+    <script>
+        // DEPENDENCIES:
+        // - firebase-app.js
+        // - firebase-firestore.js
+
+        const nameInput = document.getElementById('nameInput');
+        const messageInput = document.getElementById('messageInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const adminBtn = document.getElementById('adminBtn');
+        const greetingsContainer = document.getElementById('greetingsContainer');
+        const ADMIN_PIN = '26435';
+
+        // Credenciales de tu proyecto de Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyBSlpFVyWiENlRbcmnon6jINaiLgFIN_8M",
+          authDomain: "cajita-de-saludos.firebaseapp.com",
+          projectId: "cajita-de-saludos",
+          storageBucket: "cajita-de-saludos.firebasestorage.app",
+          messagingSenderId: "921310554287",
+          appId: "1:921310554287:web:55722e56bd6f69c44d8c5a",
+          measurementId: "G-GPD7G2W75R"
+        };
+        
+        // Inicializa Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Escucha los cambios en la base de datos en tiempo real
+        db.collection("greetings").orderBy("timestamp", "desc").onSnapshot((querySnapshot) => {
+            const greetings = [];
+            querySnapshot.forEach((doc) => {
+                greetings.push(doc.data());
+            });
+            renderGreetings(greetings);
+        });
+
+        function renderGreetings(greetings) {
+            greetingsContainer.innerHTML = '';
+            greetings.forEach(greeting => {
+                const greetingCard = document.createElement('div');
+                greetingCard.classList.add('greeting-card');
+                greetingCard.innerHTML = `
+                    <p class="author">${greeting.name}</p>
+                    <p>${greeting.message}</p>
+                    <p class="timestamp">${greeting.timestamp.toDate().toLocaleString()}</p>
+                `;
+                greetingsContainer.appendChild(greetingCard);
+            });
+        }
+
+        async function showAdminMenu() {
+            const pin = prompt('Ingresa el PIN de administrador:');
+            if (pin === ADMIN_PIN) {
+                const action = prompt('PIN correcto. ¿Qué deseas hacer? (escribe "borrar" para borrar todos los saludos)');
+                if (action && action.toLowerCase() === 'borrar') {
+                    if (confirm('¿Estás seguro de que quieres borrar todos los saludos?')) {
+                        // Borrar todos los documentos de la colección
+                        const greetingsRef = db.collection('greetings');
+                        const query = await greetingsRef.get();
+                        
+                        const batch = db.batch();
+                        query.forEach(doc => {
+                            batch.delete(doc.ref);
+                        });
+                        
+                        await batch.commit();
+                        alert('Todos los saludos han sido borrados.');
+                    }
+                } else {
+                    alert('Acción no reconocida.');
+                }
+            } else if (pin !== null) {
+                alert('PIN incorrecto. Acceso denegado.');
+            }
+        }
+
+        submitBtn.addEventListener('click', async () => {
+            const name = nameInput.value.trim();
+            const message = messageInput.value.trim();
+
+            if (name && message) {
+                try {
+                    await db.collection("greetings").add({
+                        name: name,
+                        message: message,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    nameInput.value = '';
+                    messageInput.value = '';
+                } catch (e) {
+                    console.error("Error al agregar documento: ", e);
+                    alert("Ocurrió un error al enviar el saludo. Intenta de nuevo.");
+                }
+            } else {
+                alert('Por favor, llena todos los campos.');
+            }
+        });
+
+        adminBtn.addEventListener('click', showAdminMenu);
+    </script>
+</body>
+</html>
