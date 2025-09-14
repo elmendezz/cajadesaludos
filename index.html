@@ -191,14 +191,7 @@
         </section>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
-
     <script>
-        // DEPENDENCIES:
-        // - firebase-app.js
-        // - firebase-firestore.js
-
         const nameInput = document.getElementById('nameInput');
         const messageInput = document.getElementById('messageInput');
         const submitBtn = document.getElementById('submitBtn');
@@ -206,27 +199,17 @@
         const greetingsContainer = document.getElementById('greetingsContainer');
         const ADMIN_PIN = '26435';
 
-        const firebaseConfig = {
-          apiKey: "AIzaSyBSlpFVyWiENlRbcmnon6jINaiLgFIN_8M",
-          authDomain: "cajita-de-saludos.firebaseapp.com",
-          projectId: "cajita-de-saludos",
-          storageBucket: "cajita-de-saludos.firebasestorage.app",
-          messagingSenderId: "921310554287",
-          appId: "1:921310554287:web:55722e56bd6f69c44d8c5a",
-          measurementId: "G-GPD7G2W75R"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        db.collection("greetings").orderBy("timestamp", "desc").onSnapshot((querySnapshot) => {
-            const greetings = [];
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                greetings.push({ ...data, id: doc.id });
-            });
-            renderGreetings(greetings);
-        });
+        // Función para cargar los saludos
+        async function fetchGreetings() {
+            try {
+                const response = await fetch('/api/greetings');
+                const greetings = await response.json();
+                renderGreetings(greetings);
+            } catch (e) {
+                console.error("Error al cargar los saludos: ", e);
+                alert("Ocurrió un error al cargar los saludos. Intenta recargar la página.");
+            }
+        }
 
         function renderGreetings(greetings) {
             greetingsContainer.innerHTML = '';
@@ -236,7 +219,7 @@
                 if (greeting.isGlowing) {
                     greetingCard.classList.add('glowing');
                 }
-                const timestamp = greeting.timestamp && greeting.timestamp.toDate ? greeting.timestamp.toDate().toLocaleString() : 'Fecha no disponible';
+                const timestamp = new Date(greeting.timestamp).toLocaleString();
                 greetingCard.innerHTML = `
                     <p class="author">${greeting.name}</p>
                     <p>${greeting.message}</p>
@@ -247,28 +230,30 @@
         }
         
         submitBtn.addEventListener('click', async () => {
-            console.log("Click del botón 'Enviar saludo' detectado.");
             const name = nameInput.value.trim();
             const message = messageInput.value.trim();
 
             if (!name || !message) {
-                console.log("Error: Nombre o mensaje están vacíos.");
                 alert('Por favor, llena todos los campos.');
                 return;
             }
 
             try {
-                await db.collection("greetings").add({
-                    name: name,
-                    message: message,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    isGlowing: false
+                const response = await fetch('/api/greetings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, message, isGlowing: false, action: 'submit' })
                 });
-                console.log("Saludo enviado con éxito.");
-                nameInput.value = '';
-                messageInput.value = '';
+
+                if (response.ok) {
+                    nameInput.value = '';
+                    messageInput.value = '';
+                    fetchGreetings();
+                } else {
+                    alert("Ocurrió un error al enviar el saludo. Intenta de nuevo.");
+                }
             } catch (e) {
-                console.error("Error al agregar documento: ", e);
+                console.error("Error en la petición: ", e);
                 alert("Ocurrió un error al enviar el saludo. Revisa la consola para más detalles.");
             }
         });
@@ -277,31 +262,21 @@
             const pin = prompt('Ingresa el PIN de administrador:');
             if (pin === ADMIN_PIN) {
                 const action = prompt('PIN correcto. ¿Qué deseas hacer? (escribe "borrar" o "glow")');
-                if (action && action.toLowerCase() === 'borrar') {
-                    if (confirm('¿Estás seguro de que quieres borrar todos los saludos?')) {
-                        const greetingsRef = db.collection('greetings');
-                        const query = await greetingsRef.get();
-                        
-                        const batch = db.batch();
-                        query.forEach(doc => {
-                            batch.delete(doc.ref);
-                        });
-                        
-                        await batch.commit();
-                        alert('Todos los saludos han sido borrados.');
-                    }
-                } else if (action && action.toLowerCase() === 'glow') {
+                
+                if (action && (action.toLowerCase() === 'borrar' || action.toLowerCase() === 'glow')) {
                     try {
-                        await db.collection("greetings").add({
-                            name: "elmendezz",
-                            message: "¡Saludos de parte del admin! 😎",
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                            isGlowing: true
+                        const response = await fetch('/api/greetings', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ pin, action })
                         });
-                        alert("¡Mensaje de admin con glow enviado!");
+
+                        const result = await response.json();
+                        alert(result.message);
+                        fetchGreetings();
                     } catch (e) {
-                        console.error("Error al enviar el mensaje de admin: ", e);
-                        alert("Ocurrió un error al enviar el mensaje de admin. Revisa la consola para más detalles.");
+                        console.error("Error en la petición del admin: ", e);
+                        alert("Ocurrió un error. Revisa la consola.");
                     }
                 } else if (action !== null) {
                     alert('Acción no reconocida. (Solo se acepta "borrar" o "glow")');
@@ -311,6 +286,7 @@
             }
         });
 
+        window.onload = fetchGreetings;
     </script>
 </body>
 </html>
