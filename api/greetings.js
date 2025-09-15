@@ -1,21 +1,19 @@
-// BOT Version:2
+// BOT Version:3
 // Dependencias: Ninguna, usa las de Vercel y la API de GitHub
 // Change Log:
-// - Se cambió la interacción de GitHub Gist a un repositorio de GitHub.
-// - La lógica ahora maneja la obtención, modificación y actualización del archivo.
+// - Se corrigió el error "sha" wasn't supplied.
+// - La lógica ahora obtiene el SHA del archivo antes de intentar actualizarlo en el método POST.
 
 import fetch from 'node-fetch';
 
 // !!!!!!!!!!!!!!!!!!!!!!!! IMPORTANTE !!!!!!!!!!!!!!!!!!!!!!!!
-// 🚨 Estas son tus nuevas variables de entorno de Vercel
-// Ten en cuenta que debes cambiar 'elmendezz' y 'saludos-repo' por los tuyos.
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // ¡Tu token seguro!
-const GITHUB_OWNER = 'elmendezz'; // Tu nombre de usuario de GitHub
-const GITHUB_REPO = 'saludos_repo'; // El nombre de tu repositorio
-const GITHUB_FILE_PATH = 'greetings.json'; // La ruta del archivo dentro del repo
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN; 
+const GITHUB_OWNER = process.env.GITHUB_OWNER;
+const GITHUB_REPO = process.env.GITHUB_REPO;
+const GITHUB_FILE_PATH = 'greetings.json';
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-async function getFileSha() {
+async function getFileContent() {
     const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
     const headers = {
         'Authorization': `token ${GITHUB_TOKEN}`,
@@ -23,31 +21,25 @@ async function getFileSha() {
     };
     const response = await fetch(url, { headers });
     if (!response.ok) {
-        throw new Error('Error al obtener el SHA del archivo.');
+        throw new Error('Error al obtener el contenido del archivo.');
     }
-    const data = await response.json();
-    return data.sha;
-}
-
-async function getGreetings() {
-    const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
-    const headers = {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3.raw' // Para obtener el contenido del archivo directo
+    const data = await response.text();
+    const headersRaw = {
+      'Authorization': `token ${GITHUB_TOKEN}`,
+    }
+    const shaResponse = await fetch(url, {headers: headersRaw});
+    const shaData = await shaResponse.json();
+    return {
+        content: JSON.parse(data),
+        sha: shaData.sha
     };
-    const response = await fetch(url, { headers });
-    if (!response.ok) {
-        throw new Error('Error al obtener los saludos.');
-    }
-    const content = await response.text();
-    return JSON.parse(content);
 }
 
 async function updateRepoFile(newContent, sha) {
     const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
     const body = {
-        message: 'Nuevo saludo agregado', // Mensaje del commit
-        content: Buffer.from(JSON.stringify(newContent, null, 2)).toString('base64'), // El contenido debe estar en base64
+        message: 'Nuevo saludo agregado', 
+        content: Buffer.from(JSON.stringify(newContent, null, 2)).toString('base64'),
         sha: sha
     };
     const headers = {
@@ -56,7 +48,7 @@ async function updateRepoFile(newContent, sha) {
     };
 
     const response = await fetch(url, {
-        method: 'PUT', // PUT para actualizar archivos
+        method: 'PUT',
         headers: headers,
         body: JSON.stringify(body)
     });
@@ -70,8 +62,8 @@ async function updateRepoFile(newContent, sha) {
 export default async function handler(req, res) {
     if (req.method === 'GET') {
         try {
-            const greetings = await getGreetings();
-            res.status(200).json(greetings);
+            const { content } = await getFileContent();
+            res.status(200).json(content);
         } catch (e) {
             console.error(e);
             res.status(500).json({ error: 'No se pudieron cargar los saludos. Revisa tus credenciales y el repositorio.' });
@@ -83,7 +75,8 @@ export default async function handler(req, res) {
                 return res.status(400).json({ error: 'Nombre y mensaje son requeridos.' });
             }
 
-            const greetings = await getGreetings();
+            const { content: greetings, sha } = await getFileContent();
+            
             const newGreeting = {
                 name,
                 message,
@@ -92,8 +85,6 @@ export default async function handler(req, res) {
             };
             greetings.push(newGreeting);
 
-            // Obtener el SHA del archivo antes de actualizarlo
-            const sha = await getFileSha();
             await updateRepoFile(greetings, sha);
 
             res.status(200).json({ message: 'Saludo enviado con éxito' });
