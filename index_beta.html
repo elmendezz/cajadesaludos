@@ -19,6 +19,7 @@
             --pulse-glow-end: rgba(62, 102, 240, 1.0);
             --signature-color: #555;
             --like-color: #f03e3e;
+            --like-icon-color: #e0e0e0;
         }
 
         /* Tema Claro */
@@ -29,12 +30,13 @@
             --text-color-dark: #333;
             --border-color-dark: #ddd;
             --form-bg-dark: #eee;
-            --accent-color: #2e59d9;
-            --glow-color: rgba(46, 89, 217, 0.3);
+            --glow-color: rgba(62, 102, 240, 0.2);
             --shadow-color: rgba(0, 0, 0, 0.1);
-            --pulse-glow-start: rgba(46, 89, 217, 0.5);
-            --pulse-glow-end: rgba(46, 89, 217, 1.0);
-            --signature-color: #aaa;
+            --pulse-glow-start: rgba(62, 102, 240, 0.2);
+            --pulse-glow-end: rgba(62, 102, 240, 0.5);
+            --signature-color: #bbb;
+            --like-color: #f03e3e;
+            --like-icon-color: #777;
         }
 
         body {
@@ -42,414 +44,630 @@
             background-color: var(--bg-color-dark);
             color: var(--text-color-dark);
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
-            transition: background-color 0.5s ease;
+            background-image: radial-gradient(circle, rgba(62, 102, 240, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            transition: background-color 0.3s, color 0.3s;
         }
-
-        .container {
+            .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 700px;
             background-color: var(--container-bg-dark);
             border-radius: 20px;
             padding: 30px;
             box-shadow: 0 4px 60px var(--shadow-color);
             border: 1px solid var(--border-color-dark);
             animation: fadeIn 1s ease-in-out;
-            transition: background-color 0.5s ease, box-shadow 0.5s ease, border-color 0.5s ease;
+            position: relative;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         header {
             text-align: center;
             margin-bottom: 20px;
+            position: relative;
         }
-
-        header img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 2px solid var(--accent-color);
-            object-fit: cover;
-            margin-bottom: 10px;
-        }
-
-        header h1 {
-            font-size: 2em;
-            color: var(--text-color-dark);
-            margin: 0;
-            text-shadow: 0 0 10px var(--glow-color);
-            transition: color 0.5s ease, text-shadow 0.5s ease;
-        }
-
-        .header-subtitles {
-            margin-top: 5px;
-            text-align: center;
-        }
-        .header-subtitles h2 {
-            font-size: 1.2em;
+        
+        h1 {
             color: var(--accent-color);
             margin: 0;
-            font-weight: normal;
-        }
-        .header-subtitles h3 {
-            font-size: 0.8em;
-            color: var(--signature-color);
-            margin: 5px 0 0;
-            font-weight: normal;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px var(--glow-color);
         }
 
-        .form-section, .greetings-section {
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .menu-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-color-dark);
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .menu {
+            position: fixed;
+            top: 0;
+            left: -300px; /* Oculto por defecto */
+            height: 100%;
+            width: 250px;
+            background-color: var(--container-bg-dark);
+            border-right: 1px solid var(--border-color-dark);
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+            transition: left 0.3s ease-in-out;
+            z-index: 1000;
+        }
+
+        .menu.open {
+            left: 0;
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .menu-overlay.open {
+            display: block;
+        }
+
+        .menu-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu-item {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color-dark);
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item a {
+            color: var(--text-color-dark);
+            text-decoration: none;
+            display: block;
+        }
+            .search-container {
+            flex-grow: 1;
+            margin: 0 20px;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 50px;
+            border: 1px solid var(--border-color-dark);
+            background-color: var(--form-bg-dark);
+            color: var(--text-color-dark);
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        #searchInput:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--glow-color);
+        }
+
+        #themeToggleBtn {
+            background: none;
+            border: none;
+            color: var(--text-color-dark);
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        #themeToggleBtn:hover {
+            color: var(--accent-color);
+        }
+
+        .greetings-list {
+            display: grid;
+            gap: 20px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .greeting-card {
             background-color: var(--card-bg-dark);
             padding: 20px;
             border-radius: 15px;
-            margin-top: 20px;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
-            transition: background-color 0.5s ease, box-shadow 0.5s ease;
+            border: 1px solid var(--border-color-dark);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .form-section h2, .greetings-section h2 {
-            color: var(--accent-color);
+        .greeting-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+        
+        .greeting-card.glowing::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background: linear-gradient(45deg, var(--glow-color), transparent, var(--glow-color));
+            background-size: 400% 400%;
+            z-index: -1;
+            filter: blur(8px);
+            animation: glowing-border 2s linear infinite;
+        }
+
+        @keyframes glowing-border {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .greeting-card.glowing {
+            border: 1px solid var(--accent-color);
+            box-shadow: 0 0 20px var(--glow-color), 0 0 40px var(--glow-color);
+        }
+
+        .greeting-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .greeting-message {
+            margin: 0 0 10px;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .greeting-signature {
+            font-style: italic;
+            text-align: right;
+            color: var(--signature-color);
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .like-btn, .info-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--like-icon-color);
+            transition: transform 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px;
+        }
+
+        .like-btn.liked {
+            color: var(--like-color);
+        }
+
+        .like-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .info-btn {
+            background-color: var(--form-bg-dark);
+            border-radius: 5px;
+            font-size: 0.8em;
+            padding: 5px 10px;
+            color: var(--text-color-dark);
+            border: 1px solid var(--border-color-dark);
+            transition: background-color 0.2s;
+        }
+
+        .info-btn:hover {
+            background-color: #555;
+        }
+
+        .like-btn span {
+            font-size: 0.9em;
+        }
+        
+        .like-icon {
             font-size: 1.5em;
-            margin-top: 0;
-            border-bottom: 2px solid var(--accent-color);
-            padding-bottom: 5px;
-            transition: color 0.5s ease, border-color 0.5s ease;
         }
 
-        input[type="text"], textarea {
+        .form-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: var(--form-bg-dark);
+            border-radius: 15px;
+            border: 1px solid var(--border-color-dark);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
             width: 100%;
             padding: 12px;
-            margin-bottom: 15px;
-            background-color: var(--form-bg-dark);
-            border: 1px solid var(--border-color-dark);
-            color: var(--text-color-dark);
             border-radius: 8px;
-            font-size: 1em;
+            border: 1px solid var(--border-color-dark);
+            background-color: var(--card-bg-dark);
+            color: var(--text-color-dark);
             box-sizing: border-box;
-            transition: all 0.3s ease;
+            font-size: 1em;
+            resize: vertical;
         }
 
-        input[type="text"]:focus, textarea:focus {
+        .form-group input:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: var(--accent-color);
             box-shadow: 0 0 0 3px var(--glow-color);
         }
 
-        .button-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        button {
-            flex: 1;
-            padding: 12px;
-            background-color: var(--accent-color);
-            color: #fff;
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
             border: none;
             border-radius: 8px;
-            font-size: 1em;
+            background-color: var(--accent-color);
+            color: #fff;
+            font-size: 1.1em;
+            font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: background-color 0.3s, transform 0.2s;
         }
 
-        button:hover {
-            background-color: #2a4ac8;
+        .submit-btn:hover {
+            background-color: #3152c7;
             transform: translateY(-2px);
         }
-        
-        #adminBtn, #themeToggleBtn {
-            background-color: #555;
-            flex: none;
-            width: auto;
-        }
-        
-        #adminBtn:hover, #themeToggleBtn:hover {
-            background-color: #444;
-        }
 
-        #greetingsContainer {
-            margin-top: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .greeting-card {
-            background-color: var(--form-bg-dark);
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 5px solid var(--accent-color);
-            transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.5s ease;
-            position: relative;
-        }
-
-        .greeting-card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 10px var(--glow-color);
-        }
-        
-        .greeting-card.glowing {
-            background-color: rgba(62, 102, 240, 0.15);
-            border-color: var(--accent-color);
-            box-shadow: 0 0 15px var(--pulse-glow-start);
-            animation: pulse-glow 2s infinite alternate;
-        }
-
-        @keyframes pulse-glow {
-            from { box-shadow: 0 0 10px var(--pulse-glow-start); }
-            to { box-shadow: 0 0 20px var(--pulse-glow-end); }
-        }
-
-        .greeting-card p {
-            margin: 0;
-            font-size: 0.95em;
-        }
-
-        .greeting-card .author {
-            font-weight: bold;
-            color: var(--text-color-dark);
-            margin-bottom: 5px;
-            transition: color 0.5s ease;
-        }
-
-        .greeting-card .timestamp {
-            font-size: 0.75em;
-            color: var(--signature-color);
-            text-align: right;
-            margin-top: 10px;
-            transition: color 0.5s ease;
-        }
-
-        .greeting-card .message-id {
-            font-size: 0.6em;
-            color: var(--signature-color);
-            text-align: left;
-            margin-top: 5px;
-            transition: color 0.5s ease;
-        }
-        
-        .signature-message {
-            font-size: 0.7em;
-            color: var(--signature-color);
-            text-align: right;
-            margin-top: 5px;
-            transition: color 0.5s ease;
-        }
-
-        .like-container {
-            position: absolute;
-            bottom: 10px;
-            right: 15px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .like-btn {
-            background: none;
-            border: none;
-            color: var(--like-color);
-            font-size: 1.2em;
-            cursor: pointer;
-            padding: 0;
-            width: auto;
-        }
-        .like-btn:hover {
-            transform: scale(1.2);
-        }
-        .like-count {
-            font-size: 0.8em;
-            color: var(--text-color-dark);
-        }
-        
         footer {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 30px;
             font-size: 0.8em;
             color: var(--signature-color);
-            transition: color 0.5s ease;
+        }
+
+        /* Estilos del Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1002;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: var(--card-bg-dark);
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color-dark);
+            width: 80%;
+            max-width: 400px;
+            position: relative;
+            animation: modalOpen 0.3s ease-out;
+        }
+
+        @keyframes modalOpen {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .close-btn {
+            color: var(--text-color-dark);
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-info {
+            padding-top: 20px;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <img src="logo.jpg" alt="Logo de la página">
-            <h1>Cajita De Saludos</h1>
-            <div class="header-subtitles">
-                <h2>o caja de chismes 😂</h2>
-                <h3>Página en construcción, puede tener problemas.</h3>
-            </div>
-        </header>
-
-        <section class="form-section">
-            <h2>Escribe tu saludo</h2>
-            <input type="text" id="nameInput" placeholder="Tu nombre" required>
-            <textarea id="messageInput" placeholder="Tu mensaje..." rows="4" required></textarea>
-            <div class="button-group">
-                <button id="submitBtn">Enviar saludo</button>
-                <button id="adminBtn">Admin</button>
-                <button id="themeToggleBtn">Modo</button>
-            </div>
-        </section>
-
-        <section class="greetings-section">
-            <h2>Saludos de la comunidad</h2>
-            <input type="text" id="searchInput" placeholder="Buscar mensajes por nombre o ID...">
-            <div id="greetingsContainer">
-            </div>
-        </section>
-        
-        <footer>
-            <p class="signature">creado por @elmendez_2.0</p>
-        </footer>
+    <div class="menu">
+        <ul class="menu-list">
+            <li class="menu-item">
+                <button id="themeToggleBtn">Cambiar Tema</button>
+            </li>
+            <li class="menu-item">
+                <a href="#">Inicio</a>
+            </li>
+        </ul>
     </div>
 
+    <div class="menu-overlay"></div>
+
+    <div class="container">
+        <header>
+            <div class="controls">
+                <button class="menu-toggle-btn">☰</button>
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Buscar saludos...">
+                </div>
+            </div>
+            <h1>Cajita De Saludos</h1>
+            <p>Deja tu saludo con buena onda.</p>
+        </header>
+
+        <section id="greetingsSection">
+            <ul class="greetings-list" id="greetingsList">
+                </ul>
+        </section>
+
+        <div class="form-container">
+            <form id="greetingForm">
+                <div class="form-group">
+                    <label for="nameInput">Tu Nombre:</label>
+                    <input type="text" id="nameInput" required placeholder="Escribe tu nombre o alias">
+                </div>
+                <div class="form-group">
+                    <label for="messageInput">Tu Mensaje:</label>
+                    <textarea id="messageInput" rows="4" required placeholder="Escribe tu mensaje aquí"></textarea>
+                </div>
+                <button type="submit" class="submit-btn" id="submitBtn">Enviar Saludo</button>
+            </form>
+        </div>
+        <div id="modalInfo" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <div class="modal-info">
+                    <p><strong>ID:</strong> <span id="modalId"></span></p>
+                    <p><strong>Nombre:</strong> <span id="modalName"></span></p>
+                    <p><strong>Mensaje:</strong> <span id="modalMessage"></span></p>
+                    <p><strong>Fecha:</strong> <span id="modalDate"></span></p>
+                    <p><strong>Likes:</strong> <span id="modalLikes"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Hecho con 🔥 por elmendezz | <a href="index_admin.html">Admin</a></p>
+        </footer>
+    </div>
     <script>
-        // BOT Version: 6
+        // BOT Version: 8
+        // Dependencias: Ninguna.
         // Change Log:
-        // - Se añade la funcionalidad de "Me Gusta".
-        // - Se añade un selector de temas (modo oscuro/claro).
-        // - Se añade un campo de búsqueda para filtrar mensajes.
-        // - Se implementa un refresco automático cada 10 segundos para nuevos mensajes.
-        // - Se añaden los nuevos subtítulos al encabezado.
-        
-        const nameInput = document.getElementById('nameInput');
-        const messageInput = document.getElementById('messageInput');
-        const submitBtn = document.getElementById('submitBtn');
-        const adminBtn = document.getElementById('adminBtn');
-        const themeToggleBtn = document.getElementById('themeToggleBtn');
-        const greetingsContainer = document.getElementById('greetingsContainer');
-        const searchInput = document.getElementById('searchInput');
-        const ADMIN_PIN = '26435';
+        // - Se modifica la lógica de likes para poder dar y quitar likes.
+        // - Se usa localStorage para guardar los likes del usuario.
+        // - Se añade un botón de 'Información' a cada tarjeta.
+        // - Se crea un modal para mostrar la información detallada del saludo.
+        // - Se implementa un menú de hamburguesa para el botón de cambio de tema.
+
+        const API_URL = '/api/greetings.js';
+        const LIKE_API_URL = '/api/like.js';
+        const GREETINGS_LIST = document.getElementById('greetingsList');
+        const NAME_INPUT = document.getElementById('nameInput');
+        const MESSAGE_INPUT = document.getElementById('messageInput');
+        const FORM = document.getElementById('greetingForm');
+        const THEME_TOGGLE_BTN = document.getElementById('themeToggleBtn');
+        const SEARCH_INPUT = document.getElementById('searchInput');
+        const MENU_TOGGLE_BTN = document.querySelector('.menu-toggle-btn');
+        const MENU = document.querySelector('.menu');
+        const MENU_OVERLAY = document.querySelector('.menu-overlay');
+        const INFO_MODAL = document.getElementById('modalInfo');
+        const CLOSE_MODAL_BTN = document.querySelector('.modal .close-btn');
+
         let allGreetings = [];
-
-        async function apiRequest(endpoint, method, data = null) {
-            const options = {
-                method,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            };
-            if (data) { options.body = JSON.stringify(data); }
-
-            try {
-                const response = await fetch(endpoint, options);
-                if (!response.ok) {
-                    const errorData = await response.text();
-                    throw new Error(errorData || `Error del servidor: ${response.status} ${response.statusText}`);
-                }
-                return await response.json();
-            } catch (e) {
-                console.error(`Error en la solicitud a ${endpoint}:`, e);
-                alert(`Ocurrió un error: ${e.message}`);
-                throw e;
-            }
-        }
+        let likedGreetings = JSON.parse(localStorage.getItem('likedGreetings')) || {};
 
         async function fetchGreetings() {
             try {
-                allGreetings = await apiRequest('/api/greetings', 'GET');
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error('No se pudieron obtener los saludos.');
+                }
+                allGreetings = await response.json();
                 renderGreetings(allGreetings);
             } catch (e) {
-                // El alert ya está en apiRequest
+                console.error('Error:', e);
+                GREETINGS_LIST.innerHTML = `<li style="text-align: center; color: var(--like-color);">No se pudieron cargar los saludos.</li>`;
             }
         }
 
-        async function addGreeting(name, message) {
+        async function postGreeting(name, message) {
             try {
-                await apiRequest('/api/greetings', 'POST', { name, message });
-                nameInput.value = '';
-                messageInput.value = '';
-                fetchGreetings();
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, message })
+                });
+                if (!response.ok) {
+                    throw new Error('Error al enviar el saludo.');
+                }
+                alert('Saludo enviado con éxito.');
+                await fetchGreetings(); // Actualizar la lista
             } catch (e) {
-                // El alert ya está en apiRequest
-            }
-        }
-
-        async function likeGreeting(id) {
-            try {
-                await apiRequest('/api/like', 'POST', { id });
-                fetchGreetings();
-            } catch (e) {
-                // El alert ya está en apiRequest
+                console.error('Error:', e);
+                alert('Hubo un error al enviar el saludo. Inténtalo de nuevo.');
             }
         }
         
+        async function toggleLike(id) {
+            const isLiked = likedGreetings[id];
+            const action = isLiked ? 'unlike' : 'like';
+
+            try {
+                const response = await fetch(LIKE_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, action })
+                });
+                if (!response.ok) {
+                    throw new Error('Error al actualizar el like.');
+                }
+
+                if (isLiked) {
+                    delete likedGreetings[id];
+                } else {
+                    likedGreetings[id] = true;
+                }
+                localStorage.setItem('likedGreetings', JSON.stringify(likedGreetings));
+                await fetchGreetings();
+            } catch (e) {
+                console.error('Error:', e);
+                alert('No se pudo actualizar el like.');
+            }
+        }
+
         function renderGreetings(greetings) {
-            greetingsContainer.innerHTML = '';
-            const sortedGreetings = greetings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            sortedGreetings.forEach(greeting => {
-                const greetingCard = document.createElement('div');
-                greetingCard.classList.add('greeting-card');
-                if (greeting.isGlowing) {
-                    greetingCard.classList.add('glowing');
-                }
-                const timestamp = new Date(greeting.timestamp).toLocaleString();
+            GREETINGS_LIST.innerHTML = '';
+            greetings.forEach(g => {
+                const li = document.createElement('li');
+                li.className = `greeting-card ${g.isGlowing ? 'glowing' : ''}`;
+                const date = new Date(g.timestamp).toLocaleString();
+                const isLiked = likedGreetings[g.id];
+                const likeClass = isLiked ? 'liked' : '';
                 
-                let signature = '';
-                if (greeting.isGlowing) {
-                    signature = '<p class="signature-message">creado por @elmendez_2.0</p>';
-                }
-                
-                greetingCard.innerHTML = `
-                    <p class="author">${greeting.name}</p>
-                    <p>${greeting.message}</p>
-                    <p class="timestamp">${timestamp}</p>
-                    <p class="message-id">ID: ${greeting.id}</p>
-                    ${signature}
-                    <div class="like-container">
-                        <button class="like-btn" data-id="${greeting.id}">❤</button>
-                        <span class="like-count">${greeting.likes || 0}</span>
+                li.innerHTML = `
+                    <div class="greeting-content">
+                        <p class="greeting-message">${g.message}</p>
+                        <p class="greeting-signature">- ${g.name}</p>
+                        <div class="actions">
+                            <button class="like-btn ${likeClass}" data-id="${g.id}">
+                                <span class="like-icon">❤️</span>
+                                <span>${g.likes || 0}</span>
+                            </button>
+                            <button class="info-btn" data-id="${g.id}">Información</button>
+                        </div>
                     </div>
                 `;
-                greetingsContainer.appendChild(greetingCard);
+                GREETINGS_LIST.appendChild(li);
             });
 
-            document.querySelectorAll('.like-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const id = e.target.dataset.id;
-                    likeGreeting(id);
+            // Añadir eventos a los nuevos botones
+            document.querySelectorAll('.like-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    toggleLike(id);
+                });
+            });
+            
+            document.querySelectorAll('.info-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    const greeting = allGreetings.find(g => g.id === id);
+                    if (greeting) {
+                        showInfoModal(greeting);
+                    }
                 });
             });
         }
-        
-        submitBtn.addEventListener('click', () => {
-            const name = nameInput.value.trim();
-            const message = messageInput.value.trim();
+            function showInfoModal(greeting) {
+            document.getElementById('modalId').textContent = greeting.id;
+            document.getElementById('modalName').textContent = greeting.name;
+            document.getElementById('modalMessage').textContent = greeting.message;
+            document.getElementById('modalDate').textContent = new Date(greeting.timestamp).toLocaleString();
+            document.getElementById('modalLikes').textContent = greeting.likes;
+            INFO_MODAL.style.display = 'flex';
+        }
+
+        FORM.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = NAME_INPUT.value.trim();
+            const message = MESSAGE_INPUT.value.trim();
             if (name && message) {
-                addGreeting(name, message);
+                await postGreeting(name, message);
+                NAME_INPUT.value = '';
+                MESSAGE_INPUT.value = '';
             } else {
                 alert('Por favor, llena todos los campos.');
             }
         });
 
-        adminBtn.addEventListener('click', () => {
-            const pin = prompt('Ingresa el PIN de administrador:');
-            if (pin === ADMIN_PIN) {
-                window.location.href = 'index_admin.html';
-            } else if (pin !== null) {
-                alert('PIN incorrecto. Acceso denegado.');
-            }
-        });
-
-        themeToggleBtn.addEventListener('click', () => {
+        THEME_TOGGLE_BTN.addEventListener('click', () => {
             document.body.classList.toggle('light-mode');
             const isLightMode = document.body.classList.contains('light-mode');
             localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
         });
 
-        searchInput.addEventListener('input', (e) => {
+        MENU_TOGGLE_BTN.addEventListener('click', () => {
+            MENU.classList.toggle('open');
+            MENU_OVERLAY.classList.toggle('open');
+        });
+
+        MENU_OVERLAY.addEventListener('click', () => {
+            MENU.classList.remove('open');
+            MENU_OVERLAY.classList.remove('open');
+        });
+        
+        CLOSE_MODAL_BTN.addEventListener('click', () => {
+            INFO_MODAL.style.display = 'none';
+        });
+
+        window.onclick = function(event) {
+            if (event.target == INFO_MODAL) {
+                INFO_MODAL.style.display = 'none';
+            }
+        }
+
+        SEARCH_INPUT.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             const filteredGreetings = allGreetings.filter(g => 
                 g.name.toLowerCase().includes(searchTerm) || 
