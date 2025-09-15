@@ -2,12 +2,13 @@
   "name": "caja-de-saludos",
   "version": "1.0.0",
   "description": "Una cajita de saludos simple para Vercel.",
-"type": "module",
+  "type": "module",
   "main": "index.html",
   "scripts": {
     "start": "vercel dev"
   },
   "dependencies": {
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "crypto": "^1.0.1"
   }
 }
