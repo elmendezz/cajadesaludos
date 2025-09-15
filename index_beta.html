@@ -137,21 +137,17 @@
             transform: scale(1.02);
         }
         
-        /* Nuevo estilo para el glow rainbow */
+        /* Regresamos al glow original, pero bien hecho */
         .greeting-card.glowing {
-            border-image: linear-gradient(to right, #f03e3e, #f0f03e, #3ef03e, #3ef0f0, #3e3ef0, #f03ef0, #f03e3e);
-            border-image-slice: 1;
-            animation: hue-rotate-glow 5s infinite linear;
+            background-color: #1c274a;
+            border-color: #3e66f0;
+            box-shadow: 0 0 15px rgba(62, 102, 240, 0.8);
+            animation: pulse-glow 2s infinite alternate;
         }
-        
-        @keyframes hue-rotate-glow {
-            0% { border-color: #f03e3e; }
-            16% { border-color: #f0f03e; }
-            33% { border-color: #3ef03e; }
-            50% { border-color: #3ef0f0; }
-            66% { border-color: #3e3ef0; }
-            83% { border-color: #f03ef0; }
-            100% { border-color: #f03e3e; }
+
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 10px rgba(62, 102, 240, 0.5); }
+            to { box-shadow: 0 0 20px rgba(62, 102, 240, 1.0); }
         }
 
         .greeting-card p {
@@ -171,13 +167,19 @@
             text-align: right;
             margin-top: 10px;
         }
+
+        .greeting-card .message-id {
+            font-size: 0.6em;
+            color: #555;
+            text-align: left;
+            margin-top: 5px;
+        }
         
-        /* Estilo para la firma al final de la página */
-        footer {
-            text-align: center;
-            margin-top: 20px;
+        .signature {
             font-size: 0.8em;
             color: #555;
+            text-align: center;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -204,15 +206,18 @@
         </section>
         
         <footer>
-            creado por @elmendez_2.0
+            <p class="signature">creado por @elmendez_2.0</p>
         </footer>
     </div>
 
     <script>
-        // BOT Version: 3
+        // BOT Version: 4
         // Change Log:
-        // - Se eliminó la firma del código JavaScript y se agregó al HTML.
-        // - Se actualizó el CSS y el HTML para un efecto "glow rainbow".
+        // - Se corrige el "glow" para que funcione correctamente.
+        // - Se añade un ID único a cada mensaje en el backend para poder borrarlos o marcarlos de forma individual.
+        // - Se actualiza el menú de administrador para poder borrar por ID.
+        // - Se añade el ID de los mensajes en la interfaz para que el admin pueda verlos.
+        // - Se añade la firma "creado por @elmendez_2.0" a los mensajes que tienen "glow".
         
         const nameInput = document.getElementById('nameInput');
         const messageInput = document.getElementById('messageInput');
@@ -269,9 +274,10 @@
             }
         }
         
-        async function runAdminAction(action, index = null, customMessage = null) {
+        async function runAdminAction(action, id = null, customMessage = null) {
             try {
-                await apiRequest('/api/admin', 'POST', { action, index, customMessage });
+                // Ahora el endpoint de admin usa 'id' en lugar de 'index'
+                await apiRequest('/api/admin', 'POST', { action, id, customMessage });
                 alert(`Acción "${action}" ejecutada con éxito.`);
                 fetchGreetings();
             } catch (e) {
@@ -282,7 +288,7 @@
         function renderGreetings(greetings) {
             greetingsContainer.innerHTML = '';
             const sortedGreetings = greetings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            sortedGreetings.forEach((greeting, index) => {
+            sortedGreetings.forEach(greeting => {
                 const greetingCard = document.createElement('div');
                 greetingCard.classList.add('greeting-card');
                 if (greeting.isGlowing) {
@@ -290,10 +296,17 @@
                 }
                 const timestamp = new Date(greeting.timestamp).toLocaleString();
                 
+                let signature = '';
+                if (greeting.isGlowing) {
+                    signature = '<p class="signature-message">creado por @elmendez_2.0</p>';
+                }
+                
                 greetingCard.innerHTML = `
                     <p class="author">${greeting.name}</p>
                     <p>${greeting.message}</p>
                     <p class="timestamp">${timestamp}</p>
+                    <p class="message-id">ID: ${greeting.id}</p>
+                    ${signature}
                 `;
                 greetingsContainer.appendChild(greetingCard);
             });
@@ -315,15 +328,18 @@
                 const action = prompt('PIN correcto. ¿Qué deseas hacer? (escribe "borrar" o "glow")');
                 
                 if (action && action.toLowerCase() === 'borrar') {
-                    if (confirm('¿Estás seguro de que quieres borrar todos los saludos?')) {
-                        await runAdminAction('borrar');
+                    const id = prompt('Ingresa el ID del mensaje a borrar:');
+                    if (id) {
+                        if (confirm(`¿Estás seguro de que quieres borrar el saludo con ID: ${id}?`)) {
+                            await runAdminAction('borrar', id);
+                        }
                     }
                 } else if (action && action.toLowerCase() === 'glow') {
-                    const index = prompt('Ingresa el índice del saludo a marcar (el más reciente es el 0):');
+                    const id = prompt('Ingresa el ID del mensaje para marcar con glow:');
                     const customMessage = prompt('Ingresa el nuevo mensaje (opcional):');
                     
-                    if (index !== null) {
-                        await runAdminAction('glow', parseInt(index), customMessage);
+                    if (id) {
+                        await runAdminAction('glow', id, customMessage);
                     }
                 } else if (action !== null) {
                     alert('Acción no reconocida. (Solo se acepta "borrar" o "glow")');
@@ -336,4 +352,4 @@
         window.onload = fetchGreetings;
     </script>
 </body>
-    </html>
+</html>
