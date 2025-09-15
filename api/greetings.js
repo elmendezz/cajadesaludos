@@ -1,8 +1,8 @@
-// BOT Version: 6
+// BOT Version: 7
 // Dependencias: crypto
 // Change Log:
 // - Se añade la lógica para que los mensajes del admin (@elmendez_2.0) se marquen con 'glow' automáticamente al crearlos.
-// - Se actualiza el 'handler' para borrar o marcar con glow por 'id'.
+// - Se añade la propiedad 'likes' con valor de 0 a cada nuevo saludo.
 
 import fetch from 'node-fetch';
 import crypto from 'crypto';
@@ -77,14 +77,14 @@ export default async function handler(req, res) {
 
             const { content: greetings, sha } = await getFileContent();
             
-            // Generamos un ID único para el saludo y verificamos si es del admin
             const isMyMessage = name.toLowerCase() === '@elmendez_2.0';
             const newGreeting = {
                 id: crypto.randomBytes(4).toString('hex'),
                 name,
                 message,
                 timestamp: new Date().toISOString(),
-                isGlowing: isMyMessage // ¡Aquí está el cambio clave!
+                isGlowing: isMyMessage,
+                likes: 0 // ¡Aquí está el cambio clave!
             };
             greetings.push(newGreeting);
 
