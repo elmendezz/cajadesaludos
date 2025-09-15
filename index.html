@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -167,12 +166,6 @@
             text-align: right;
             margin-top: 10px;
         }
-
-        .small {
-            font-size: 0.85em;
-            color: #bbb;
-            margin-top: 8px;
-        }
     </style>
 </head>
 <body>
@@ -189,129 +182,116 @@
             <textarea id="messageInput" placeholder="Tu mensaje..." rows="4" required></textarea>
             <button id="submitBtn">Enviar saludo</button>
             <button id="adminBtn">Admin Menu</button>
-            <div class="small">NOTA: este frontend usa un backend en Vercel para actualizar el Gist (no expone tokens).</div>
         </section>
 
         <section class="greetings-section">
             <h2>Saludos de la comunidad</h2>
-            <div id="greetingsContainer"></div>
+            <div id="greetingsContainer">
+                </div>
         </section>
     </div>
 
     <script>
-        // ======= CONFIG =======
-        // Cambia esto por la URL de tu despliegue en Vercel (sin barra final)
-        const API_BASE = 'https://cajadesaludos.vercel.app';
-        // Nombre del archivo dentro del gist (debe existir greetings.json)
-        const GIST_FILENAME = 'greetings.json';
-        const ADMIN_PIN = '26435';
-        // ======================
-
+        // BOT Version:3
+        // Change Log:
+        // - Refactorización completa para usar una API de Vercel.
+        // - Las credenciales de GitHub ya no están en el código.
+        // - El cliente (navegador) se comunica con el servidor para obtener y enviar datos.
+        // - El botón de Admin ahora se maneja a través de la nueva API.
+        
         const nameInput = document.getElementById('nameInput');
         const messageInput = document.getElementById('messageInput');
         const submitBtn = document.getElementById('submitBtn');
         const adminBtn = document.getElementById('adminBtn');
         const greetingsContainer = document.getElementById('greetingsContainer');
+        const ADMIN_PIN = '26435';
 
         async function fetchGreetings() {
             try {
-                const response = await fetch(`${API_BASE}/api/greetings`);
-                if (!response.ok) {
-                    const txt = await response.text().catch(() => '');
-                    throw new Error('HTTP ' + response.status + ' - ' + txt);
-                }
+                // Ahora hacemos fetch a nuestra propia API de Vercel
+                const response = await fetch('/api/greetings');
+                if (!response.ok) throw new Error('Error al cargar los saludos');
                 const greetings = await response.json();
-                renderGreetings(Array.isArray(greetings) ? greetings : []);
+                renderGreetings(greetings);
             } catch (e) {
                 console.error("Error al cargar los saludos: ", e);
-                alert("Ocurrió un error al cargar los saludos. Revisa la consola y tu configuración de Vercel.");
+                alert("Ocurrió un error al cargar los saludos. Revisa la consola y tu API.");
             }
         }
 
-        async function updateGreetings(newGreetings) {
+        async function addGreeting(name, message) {
             try {
-                const response = await fetch(`${API_BASE}/api/greetings`, {
+                const response = await fetch('/api/greetings', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ greetings: newGreetings })
+                    body: JSON.stringify({ name, message })
                 });
 
-                const result = await response.json().catch(() => ({}));
                 if (!response.ok) {
-                    throw new Error(result.message || JSON.stringify(result));
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error al enviar el saludo');
                 }
-                // Actualizar lista en pantalla
+                
+                nameInput.value = '';
+                messageInput.value = '';
+                fetchGreetings(); // Refrescamos los saludos
+            } catch (e) {
+                console.error("Error al enviar el saludo: ", e);
+                alert(`Ocurrió un error al enviar el saludo: ${e.message}`);
+            }
+        }
+        
+        async function runAdminAction(action) {
+            try {
+                const response = await fetch('/api/admin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error al ejecutar la acción de admin');
+                }
+                
+                alert(`Acción "${action}" ejecutada con éxito.`);
                 fetchGreetings();
             } catch (e) {
-                console.error("Error al actualizar el Gist: ", e);
-                alert("Ocurrió un error al guardar el saludo. Revisa la consola y la variable GITHUB_TOKEN en Vercel.");
+                console.error("Error al ejecutar la acción de admin: ", e);
+                alert(`Ocurrió un error: ${e.message}`);
             }
         }
 
         function renderGreetings(greetings) {
             greetingsContainer.innerHTML = '';
-            const sortedGreetings = greetings.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const sortedGreetings = greetings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
             sortedGreetings.forEach(greeting => {
                 const greetingCard = document.createElement('div');
                 greetingCard.classList.add('greeting-card');
                 if (greeting.isGlowing) {
                     greetingCard.classList.add('glowing');
                 }
-                const timestamp = greeting.timestamp ? new Date(greeting.timestamp).toLocaleString() : '';
+                const timestamp = new Date(greeting.timestamp).toLocaleString();
                 greetingCard.innerHTML = `
-                    <p class="author">${escapeHtml(greeting.name || 'Anónimo')}</p>
-                    <p>${escapeHtml(greeting.message || '')}</p>
+                    <p class="author">${greeting.name}</p>
+                    <p>${greeting.message}</p>
                     <p class="timestamp">${timestamp}</p>
                 `;
                 greetingsContainer.appendChild(greetingCard);
             });
         }
-
-        // Sanitize básico para evitar inyección en el DOM
-        function escapeHtml(str) {
-            return String(str)
-                .replaceAll('&', '&amp;')
-                .replaceAll('<', '&lt;')
-                .replaceAll('>', '&gt;')
-                .replaceAll('"', '&quot;')
-                .replaceAll("'", '&#039;');
-        }
-
-        submitBtn.addEventListener('click', async () => {
+        
+        submitBtn.addEventListener('click', () => {
             const name = nameInput.value.trim();
             const message = messageInput.value.trim();
-
-            if (!name || !message) {
+            if (name && message) {
+                addGreeting(name, message);
+            } else {
                 alert('Por favor, llena todos los campos.');
-                return;
-            }
-
-            try {
-                // 1) obtener la lista actual desde el backend
-                const resp = await fetch(`${API_BASE}/api/greetings`);
-                if (!resp.ok) throw new Error('No se pudo obtener saludos actuales');
-                const greetings = await resp.json();
-
-                // 2) agregar el nuevo saludo
-                const newGreeting = {
-                    name,
-                    message,
-                    timestamp: new Date().toISOString(),
-                    isGlowing: false
-                };
-                greetings.push(newGreeting);
-
-                // 3) enviar la lista actualizada al backend
-                await updateGreetings(greetings);
-
-                // limpiar campos
-                nameInput.value = '';
-                messageInput.value = '';
-            } catch (e) {
-                console.error("Error al enviar el saludo: ", e);
-                alert("Ocurrió un error al enviar el saludo. Revisa la consola.");
             }
         });
 
@@ -322,28 +302,10 @@
                 
                 if (action && action.toLowerCase() === 'borrar') {
                     if (confirm('¿Estás seguro de que quieres borrar todos los saludos?')) {
-                        await updateGreetings([]);
-                        alert('Todos los saludos han sido borrados.');
+                        await runAdminAction('borrar');
                     }
                 } else if (action && action.toLowerCase() === 'glow') {
-                    try {
-                        const resp = await fetch(`${API_BASE}/api/greetings`);
-                        if (!resp.ok) throw new Error('No se pudo obtener saludos actuales');
-                        const greetings = await resp.json();
-
-                        const newAdminGreeting = {
-                            name: "elmendezz",
-                            message: "¡Saludos de parte del admin! 😎",
-                            timestamp: new Date().toISOString(),
-                            isGlowing: true
-                        };
-                        greetings.push(newAdminGreeting);
-                        await updateGreetings(greetings);
-                        alert("¡Mensaje de admin con glow enviado!");
-                    } catch (e) {
-                        console.error("Error al enviar el mensaje de admin: ", e);
-                        alert("Ocurrió un error al enviar el mensaje de admin. Revisa la consola para más detalles.");
-                    }
+                    await runAdminAction('glow');
                 } else if (action !== null) {
                     alert('Acción no reconocida. (Solo se acepta "borrar" o "glow")');
                 }
