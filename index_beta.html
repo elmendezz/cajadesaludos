@@ -5,30 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cajita De Saludos - elmendezz</title>
     <style>
+        :root {
+            --bg-color-dark: #1a1a1a;
+            --container-bg-dark: #222;
+            --card-bg-dark: #282828;
+            --text-color-dark: #e0e0e0;
+            --border-color-dark: #333;
+            --form-bg-dark: #333;
+            --accent-color: #3e66f0;
+            --glow-color: rgba(62, 102, 240, 0.5);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --pulse-glow-start: rgba(62, 102, 240, 0.5);
+            --pulse-glow-end: rgba(62, 102, 240, 1.0);
+            --signature-color: #555;
+            --like-color: #f03e3e;
+        }
+
+        /* Tema Claro */
+        body.light-mode {
+            --bg-color-dark: #f0f2f5;
+            --container-bg-dark: #fff;
+            --card-bg-dark: #f9f9f9;
+            --text-color-dark: #333;
+            --border-color-dark: #ddd;
+            --form-bg-dark: #eee;
+            --accent-color: #2e59d9;
+            --glow-color: rgba(46, 89, 217, 0.3);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --pulse-glow-start: rgba(46, 89, 217, 0.5);
+            --pulse-glow-end: rgba(46, 89, 217, 1.0);
+            --signature-color: #aaa;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #1a1a1a;
-            color: #e0e0e0;
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
-            background-image: radial-gradient(circle, rgba(62, 102, 240, 0.1) 1px, transparent 1px);
-            background-size: 20px 20px;
+            transition: background-color 0.5s ease;
         }
 
         .container {
             width: 100%;
             max-width: 600px;
-            background-color: #222;
+            background-color: var(--container-bg-dark);
             border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 4px 60px rgba(0, 0, 0, 0.3);
-            border: 1px solid #333;
+            box-shadow: 0 4px 60px var(--shadow-color);
+            border: 1px solid var(--border-color-dark);
             animation: fadeIn 1s ease-in-out;
+            transition: background-color 0.5s ease, box-shadow 0.5s ease, border-color 0.5s ease;
         }
 
         @keyframes fadeIn {
@@ -45,41 +78,61 @@
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            border: 2px solid #3e66f0;
+            border: 2px solid var(--accent-color);
             object-fit: cover;
             margin-bottom: 10px;
         }
 
         header h1 {
             font-size: 2em;
-            color: #fff;
+            color: var(--text-color-dark);
             margin: 0;
-            text-shadow: 0 0 10px rgba(62, 102, 240, 0.5);
+            text-shadow: 0 0 10px var(--glow-color);
+            transition: color 0.5s ease, text-shadow 0.5s ease;
+        }
+
+        .header-subtitles {
+            margin-top: 5px;
+            text-align: center;
+        }
+        .header-subtitles h2 {
+            font-size: 1.2em;
+            color: var(--accent-color);
+            margin: 0;
+            font-weight: normal;
+        }
+        .header-subtitles h3 {
+            font-size: 0.8em;
+            color: var(--signature-color);
+            margin: 5px 0 0;
+            font-weight: normal;
         }
 
         .form-section, .greetings-section {
-            background-color: #282828;
+            background-color: var(--card-bg-dark);
             padding: 20px;
             border-radius: 15px;
             margin-top: 20px;
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.5s ease, box-shadow 0.5s ease;
         }
 
         .form-section h2, .greetings-section h2 {
-            color: #3e66f0;
+            color: var(--accent-color);
             font-size: 1.5em;
             margin-top: 0;
-            border-bottom: 2px solid #3e66f0;
+            border-bottom: 2px solid var(--accent-color);
             padding-bottom: 5px;
+            transition: color 0.5s ease, border-color 0.5s ease;
         }
 
         input[type="text"], textarea {
             width: 100%;
             padding: 12px;
             margin-bottom: 15px;
-            background-color: #333;
-            border: 1px solid #555;
-            color: #e0e0e0;
+            background-color: var(--form-bg-dark);
+            border: 1px solid var(--border-color-dark);
+            color: var(--text-color-dark);
             border-radius: 8px;
             font-size: 1em;
             box-sizing: border-box;
@@ -88,14 +141,19 @@
 
         input[type="text"]:focus, textarea:focus {
             outline: none;
-            border-color: #3e66f0;
-            box-shadow: 0 0 0 3px rgba(62, 102, 240, 0.3);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--glow-color);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
         }
 
         button {
-            width: 100%;
+            flex: 1;
             padding: 12px;
-            background-color: #3e66f0;
+            background-color: var(--accent-color);
             color: #fff;
             border: none;
             border-radius: 8px;
@@ -109,12 +167,13 @@
             transform: translateY(-2px);
         }
         
-        #adminBtn {
-            margin-top: 10px;
+        #adminBtn, #themeToggleBtn {
             background-color: #555;
+            flex: none;
+            width: auto;
         }
         
-        #adminBtn:hover {
+        #adminBtn:hover, #themeToggleBtn:hover {
             background-color: #444;
         }
 
@@ -126,28 +185,29 @@
         }
 
         .greeting-card {
-            background-color: #333;
+            background-color: var(--form-bg-dark);
             padding: 15px;
             border-radius: 10px;
-            border-left: 5px solid #3e66f0;
-            transition: transform 0.2s ease;
+            border-left: 5px solid var(--accent-color);
+            transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.5s ease;
+            position: relative;
         }
 
         .greeting-card:hover {
             transform: scale(1.02);
+            box-shadow: 0 0 10px var(--glow-color);
         }
         
-        /* Regresamos al glow original, pero bien hecho */
         .greeting-card.glowing {
-            background-color: #1c274a;
-            border-color: #3e66f0;
-            box-shadow: 0 0 15px rgba(62, 102, 240, 0.8);
+            background-color: rgba(62, 102, 240, 0.15);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px var(--pulse-glow-start);
             animation: pulse-glow 2s infinite alternate;
         }
 
         @keyframes pulse-glow {
-            from { box-shadow: 0 0 10px rgba(62, 102, 240, 0.5); }
-            to { box-shadow: 0 0 20px rgba(62, 102, 240, 1.0); }
+            from { box-shadow: 0 0 10px var(--pulse-glow-start); }
+            to { box-shadow: 0 0 20px var(--pulse-glow-end); }
         }
 
         .greeting-card p {
@@ -157,29 +217,66 @@
 
         .greeting-card .author {
             font-weight: bold;
-            color: #fff;
+            color: var(--text-color-dark);
             margin-bottom: 5px;
+            transition: color 0.5s ease;
         }
 
         .greeting-card .timestamp {
             font-size: 0.75em;
-            color: #999;
+            color: var(--signature-color);
             text-align: right;
             margin-top: 10px;
+            transition: color 0.5s ease;
         }
 
         .greeting-card .message-id {
             font-size: 0.6em;
-            color: #555;
+            color: var(--signature-color);
             text-align: left;
             margin-top: 5px;
+            transition: color 0.5s ease;
         }
         
-        .signature {
+        .signature-message {
+            font-size: 0.7em;
+            color: var(--signature-color);
+            text-align: right;
+            margin-top: 5px;
+            transition: color 0.5s ease;
+        }
+
+        .like-container {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .like-btn {
+            background: none;
+            border: none;
+            color: var(--like-color);
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 0;
+            width: auto;
+        }
+        .like-btn:hover {
+            transform: scale(1.2);
+        }
+        .like-count {
             font-size: 0.8em;
-            color: #555;
+            color: var(--text-color-dark);
+        }
+        
+        footer {
             text-align: center;
             margin-top: 20px;
+            font-size: 0.8em;
+            color: var(--signature-color);
+            transition: color 0.5s ease;
         }
     </style>
 </head>
@@ -189,18 +286,26 @@
         <header>
             <img src="logo.jpg" alt="Logo de la página">
             <h1>Cajita De Saludos</h1>
+            <div class="header-subtitles">
+                <h2>o caja de chismes 😂</h2>
+                <h3>Página en construcción, puede tener problemas.</h3>
+            </div>
         </header>
 
         <section class="form-section">
             <h2>Escribe tu saludo</h2>
             <input type="text" id="nameInput" placeholder="Tu nombre" required>
             <textarea id="messageInput" placeholder="Tu mensaje..." rows="4" required></textarea>
-            <button id="submitBtn">Enviar saludo</button>
-            <button id="adminBtn">Admin Menu</button>
+            <div class="button-group">
+                <button id="submitBtn">Enviar saludo</button>
+                <button id="adminBtn">Admin</button>
+                <button id="themeToggleBtn">Modo</button>
+            </div>
         </section>
 
         <section class="greetings-section">
             <h2>Saludos de la comunidad</h2>
+            <input type="text" id="searchInput" placeholder="Buscar mensajes por nombre o ID...">
             <div id="greetingsContainer">
             </div>
         </section>
@@ -211,20 +316,23 @@
     </div>
 
     <script>
-        // BOT Version: 4
+        // BOT Version: 6
         // Change Log:
-        // - Se corrige el "glow" para que funcione correctamente.
-        // - Se añade un ID único a cada mensaje en el backend para poder borrarlos o marcarlos de forma individual.
-        // - Se actualiza el menú de administrador para poder borrar por ID.
-        // - Se añade el ID de los mensajes en la interfaz para que el admin pueda verlos.
-        // - Se añade la firma "creado por @elmendez_2.0" a los mensajes que tienen "glow".
+        // - Se añade la funcionalidad de "Me Gusta".
+        // - Se añade un selector de temas (modo oscuro/claro).
+        // - Se añade un campo de búsqueda para filtrar mensajes.
+        // - Se implementa un refresco automático cada 10 segundos para nuevos mensajes.
+        // - Se añaden los nuevos subtítulos al encabezado.
         
         const nameInput = document.getElementById('nameInput');
         const messageInput = document.getElementById('messageInput');
         const submitBtn = document.getElementById('submitBtn');
         const adminBtn = document.getElementById('adminBtn');
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
         const greetingsContainer = document.getElementById('greetingsContainer');
+        const searchInput = document.getElementById('searchInput');
         const ADMIN_PIN = '26435';
+        let allGreetings = [];
 
         async function apiRequest(endpoint, method, data = null) {
             const options = {
@@ -233,58 +341,51 @@
                     'Content-Type': 'application/json'
                 }
             };
-
-            if (data) {
-                options.body = JSON.stringify(data);
-            }
+            if (data) { options.body = JSON.stringify(data); }
 
             try {
                 const response = await fetch(endpoint, options);
-                
                 if (!response.ok) {
                     const errorData = await response.text();
                     throw new Error(errorData || `Error del servidor: ${response.status} ${response.statusText}`);
                 }
-
                 return await response.json();
             } catch (e) {
                 console.error(`Error en la solicitud a ${endpoint}:`, e);
+                alert(`Ocurrió un error: ${e.message}`);
                 throw e;
             }
         }
 
         async function fetchGreetings() {
             try {
-                const greetings = await apiRequest('/api/greetings', 'GET');
-                renderGreetings(greetings);
+                allGreetings = await apiRequest('/api/greetings', 'GET');
+                renderGreetings(allGreetings);
             } catch (e) {
-                alert("Ocurrió un error al cargar los saludos. Revisa la consola para más detalles.");
+                // El alert ya está en apiRequest
             }
         }
 
         async function addGreeting(name, message) {
             try {
                 await apiRequest('/api/greetings', 'POST', { name, message });
-                
                 nameInput.value = '';
                 messageInput.value = '';
                 fetchGreetings();
             } catch (e) {
-                alert(`Ocurrió un error al enviar el saludo: ${e.message}`);
-            }
-        }
-        
-        async function runAdminAction(action, id = null, customMessage = null) {
-            try {
-                // Ahora el endpoint de admin usa 'id' en lugar de 'index'
-                await apiRequest('/api/admin', 'POST', { action, id, customMessage });
-                alert(`Acción "${action}" ejecutada con éxito.`);
-                fetchGreetings();
-            } catch (e) {
-                alert(`Ocurrió un error al ejecutar la acción de admin: ${e.message}`);
+                // El alert ya está en apiRequest
             }
         }
 
+        async function likeGreeting(id) {
+            try {
+                await apiRequest('/api/like', 'POST', { id });
+                fetchGreetings();
+            } catch (e) {
+                // El alert ya está en apiRequest
+            }
+        }
+        
         function renderGreetings(greetings) {
             greetingsContainer.innerHTML = '';
             const sortedGreetings = greetings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -307,8 +408,19 @@
                     <p class="timestamp">${timestamp}</p>
                     <p class="message-id">ID: ${greeting.id}</p>
                     ${signature}
+                    <div class="like-container">
+                        <button class="like-btn" data-id="${greeting.id}">❤</button>
+                        <span class="like-count">${greeting.likes || 0}</span>
+                    </div>
                 `;
                 greetingsContainer.appendChild(greetingCard);
+            });
+
+            document.querySelectorAll('.like-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = e.target.dataset.id;
+                    likeGreeting(id);
+                });
             });
         }
         
@@ -322,34 +434,40 @@
             }
         });
 
-        adminBtn.addEventListener('click', async () => {
+        adminBtn.addEventListener('click', () => {
             const pin = prompt('Ingresa el PIN de administrador:');
             if (pin === ADMIN_PIN) {
-                const action = prompt('PIN correcto. ¿Qué deseas hacer? (escribe "borrar" o "glow")');
-                
-                if (action && action.toLowerCase() === 'borrar') {
-                    const id = prompt('Ingresa el ID del mensaje a borrar:');
-                    if (id) {
-                        if (confirm(`¿Estás seguro de que quieres borrar el saludo con ID: ${id}?`)) {
-                            await runAdminAction('borrar', id);
-                        }
-                    }
-                } else if (action && action.toLowerCase() === 'glow') {
-                    const id = prompt('Ingresa el ID del mensaje para marcar con glow:');
-                    const customMessage = prompt('Ingresa el nuevo mensaje (opcional):');
-                    
-                    if (id) {
-                        await runAdminAction('glow', id, customMessage);
-                    }
-                } else if (action !== null) {
-                    alert('Acción no reconocida. (Solo se acepta "borrar" o "glow")');
-                }
+                window.location.href = 'index_admin.html';
             } else if (pin !== null) {
                 alert('PIN incorrecto. Acceso denegado.');
             }
         });
 
-        window.onload = fetchGreetings;
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            const isLightMode = document.body.classList.contains('light-mode');
+            localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredGreetings = allGreetings.filter(g => 
+                g.name.toLowerCase().includes(searchTerm) || 
+                g.message.toLowerCase().includes(searchTerm) ||
+                g.id.toLowerCase().includes(searchTerm)
+            );
+            renderGreetings(filteredGreetings);
+        });
+
+        window.onload = () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+            }
+            fetchGreetings();
+            // Actualización automática cada 10 segundos
+            setInterval(fetchGreetings, 10000); 
+        };
     </script>
 </body>
 </html>
