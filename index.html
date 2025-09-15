@@ -192,12 +192,11 @@
     </div>
 
     <script>
-        // BOT Version:3
+        // BOT Version: 1
         // Change Log:
-        // - Refactorización completa para usar una API de Vercel.
-        // - Las credenciales de GitHub ya no están en el código.
-        // - El cliente (navegador) se comunica con el servidor para obtener y enviar datos.
-        // - El botón de Admin ahora se maneja a través de la nueva API.
+        // - Se refactoriza el código para mejorar el manejo de errores.
+        // - Se añade un 'try...catch' y se verifica la propiedad 'response.ok'.
+        // - Se actualizan los mensajes de error para que sean más descriptivos.
         
         const nameInput = document.getElementById('nameInput');
         const messageInput = document.getElementById('messageInput');
@@ -206,63 +205,69 @@
         const greetingsContainer = document.getElementById('greetingsContainer');
         const ADMIN_PIN = '26435';
 
+        // Función para manejar todas las solicitudes a la API
+        async function apiRequest(endpoint, method, data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(endpoint, options);
+
+                if (!response.ok) {
+                    let errorData;
+                    // Intentamos leer el error como JSON, si no, lo leemos como texto
+                    try {
+                        errorData = await response.json();
+                    } catch (e) {
+                        errorData = { error: await response.text() };
+                    }
+                    throw new Error(errorData.error || `Error del servidor: ${response.status} ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (e) {
+                console.error(`Error en la solicitud a ${endpoint}:`, e);
+                // Relanzamos el error para que sea manejado por el código que llamó a esta función
+                throw e;
+            }
+        }
+
         async function fetchGreetings() {
             try {
-                // Ahora hacemos fetch a nuestra propia API de Vercel
-                const response = await fetch('/api/greetings');
-                if (!response.ok) throw new Error('Error al cargar los saludos');
-                const greetings = await response.json();
+                const greetings = await apiRequest('/api/greetings', 'GET');
                 renderGreetings(greetings);
             } catch (e) {
-                console.error("Error al cargar los saludos: ", e);
-                alert("Ocurrió un error al cargar los saludos. Revisa la consola y tu API.");
+                alert("Ocurrió un error al cargar los saludos. Revisa la consola para más detalles.");
             }
         }
 
         async function addGreeting(name, message) {
             try {
-                const response = await fetch('/api/greetings', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ name, message })
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Error al enviar el saludo');
-                }
+                await apiRequest('/api/greetings', 'POST', { name, message });
                 
                 nameInput.value = '';
                 messageInput.value = '';
-                fetchGreetings(); // Refrescamos los saludos
+                fetchGreetings();
             } catch (e) {
-                console.error("Error al enviar el saludo: ", e);
                 alert(`Ocurrió un error al enviar el saludo: ${e.message}`);
             }
         }
         
         async function runAdminAction(action) {
             try {
-                const response = await fetch('/api/admin', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ action })
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Error al ejecutar la acción de admin');
-                }
-                
+                await apiRequest('/api/admin', 'POST', { action });
                 alert(`Acción "${action}" ejecutada con éxito.`);
                 fetchGreetings();
             } catch (e) {
-                console.error("Error al ejecutar la acción de admin: ", e);
-                alert(`Ocurrió un error: ${e.message}`);
+                alert(`Ocurrió un error al ejecutar la acción de admin: ${e.message}`);
             }
         }
 
