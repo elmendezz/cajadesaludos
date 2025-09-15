@@ -1,8 +1,8 @@
-// BOT Version:3
+// BOT Version: 4
 // Dependencias: Ninguna, usa las de Vercel y la API de GitHub
 // Change Log:
-// - Se corrigió el error "sha" wasn't supplied.
-// - La lógica ahora obtiene el SHA del archivo antes de intentar actualizarlo en el método POST.
+// - Se corrigió el error "body stream already read" optimizando getFileContent.
+// - Se obtiene el SHA y el contenido del archivo en una sola petición a la API de GitHub.
 
 import fetch from 'node-fetch';
 
@@ -17,21 +17,20 @@ async function getFileContent() {
     const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
     const headers = {
         'Authorization': `token ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3.raw'
+        'Accept': 'application/vnd.github.v3+json' // Solicitamos el formato JSON para obtener el SHA y el contenido
     };
     const response = await fetch(url, { headers });
+    
     if (!response.ok) {
-        throw new Error('Error al obtener el contenido del archivo.');
+        throw new Error('Error al obtener el contenido del archivo desde GitHub.');
     }
-    const data = await response.text();
-    const headersRaw = {
-      'Authorization': `token ${GITHUB_TOKEN}`,
-    }
-    const shaResponse = await fetch(url, {headers: headersRaw});
-    const shaData = await shaResponse.json();
+    
+    const data = await response.json();
+    const content = JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8'));
+    
     return {
-        content: JSON.parse(data),
-        sha: shaData.sha
+        content: content,
+        sha: data.sha
     };
 }
 
