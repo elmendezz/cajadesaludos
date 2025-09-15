@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - elmendez</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            background-image: radial-gradient(circle, rgba(62, 102, 240, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background-color: #222;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid #333;
+            animation: fadeIn 1s ease-in-out;
+            display: none; /* Oculto por defecto hasta ingresar el PIN */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            color: #fff;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(62, 102, 240, 0.5);
+        }
+
+        .form-section, .greetings-section {
+            background-color: #282828;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-section h2, .greetings-section h2 {
+            color: #3e66f0;
+            font-size: 1.5em;
+            margin-top: 0;
+            border-bottom: 2px solid #3e66f0;
+            padding-bottom: 5px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background-color: #333;
+            border: 1px solid #555;
+            color: #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #3e66f0;
+            box-shadow: 0 0 0 3px rgba(62, 102, 240, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3e66f0;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #2a4ac8;
+            transform: translateY(-2px);
+        }
+        
+        .greetings-section {
+            padding: 0;
+        }
+
+        #greetingsContainer {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .greeting-card {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #3e66f0;
+            transition: transform 0.2s ease;
+            position: relative;
+        }
+
+        .greeting-card:hover {
+            transform: scale(1.02);
+        }
+        
+        .greeting-card.glowing {
+            background-color: #1c274a;
+            border-color: #3e66f0;
+            box-shadow: 0 0 15px rgba(62, 102, 240, 0.8);
+            animation: pulse-glow 2s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 10px rgba(62, 102, 240, 0.5); }
+            to { box-shadow: 0 0 20px rgba(62, 102, 240, 1.0); }
+        }
+
+        .greeting-card p {
+            margin: 0;
+            font-size: 0.95em;
+        }
+
+        .greeting-card .author {
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .greeting-card .timestamp {
+            font-size: 0.75em;
+            color: #999;
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        .greeting-card .message-id {
+            font-size: 0.6em;
+            color: #555;
+            text-align: left;
+            margin-top: 5px;
+        }
+        
+        .signature-message {
+            font-size: 0.7em;
+            color: #666;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .admin-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .admin-controls button {
+            width: auto;
+            padding: 5px 10px;
+            font-size: 0.7em;
+            border-radius: 5px;
+            background-color: #444;
+        }
+        
+        .admin-controls .delete-btn {
+            background-color: #f03e3e;
+        }
+        .admin-controls .delete-btn:hover {
+            background-color: #d12a2a;
+        }
+        .admin-controls .edit-btn {
+            background-color: #3e66f0;
+        }
+        .admin-controls .edit-btn:hover {
+            background-color: #2a4ac8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Panel de Administración</h1>
+        </header>
+
+        <section class="form-section">
+            <h2>Escribe un mensaje como Admin</h2>
+            <input type="text" id="nameInput" value="@elmendez_2.0" disabled>
+            <textarea id="messageInput" placeholder="Tu mensaje..." rows="4" required></textarea>
+            <button id="submitBtn">Enviar mensaje</button>
+        </section>
+
+        <section class="greetings-section">
+            <h2>Saludos de la comunidad</h2>
+            <div id="greetingsContainer">
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // BOT Version: 5
+        // Change Log:
+        // - Se crea una nueva interfaz de administración (`index_admin.html`) protegida por PIN.
+        // - El nombre del admin (@elmendez_2.0) está predefinido en el formulario.
+        // - Se añaden botones de "Borrar" y "Editar" directamente a cada mensaje.
+        // - Se ajusta la lógica para que los botones de "glow" y "borrar" solo salgan en mensajes ajenos.
+        // - Se añade la firma "creado por @elmendez_2.0" a los mensajes del admin.
+        
+        const ADMIN_PIN = '26435';
+        const CONTAINER = document.querySelector('.container');
+        const NAME_INPUT = document.getElementById('nameInput');
+        const MESSAGE_INPUT = document.getElementById('messageInput');
+        const SUBMIT_BTN = document.getElementById('submitBtn');
+        const GREETINGS_CONTAINER = document.getElementById('greetingsContainer');
+
+        // Función de autenticación al cargar la página
+        window.onload = function() {
+            const pin = prompt('Ingresa el PIN de administrador para acceder:');
+            if (pin === ADMIN_PIN) {
+                CONTAINER.style.display = 'block';
+                fetchGreetings();
+            } else {
+                alert('PIN incorrecto. Acceso denegado.');
+                window.close(); // Cierra la ventana si el PIN es incorrecto
+            }
+        };
+
+        async function apiRequest(endpoint, method, data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(endpoint, options);
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(errorData || `Error del servidor: ${response.status} ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (e) {
+                console.error(`Error en la solicitud a ${endpoint}:`, e);
+                alert(`Ocurrió un error: ${e.message}`);
+                throw e;
+            }
+        }
+
+        async function fetchGreetings() {
+            try {
+                const greetings = await apiRequest('/api/greetings', 'GET');
+                renderGreetings(greetings);
+            } catch (e) {
+                // El alert ya está en apiRequest, no es necesario repetirlo
+            }
+        }
+
+        async function addGreeting(name, message) {
+            try {
+                await apiRequest('/api/greetings', 'POST', { name, message });
+                
+                MESSAGE_INPUT.value = '';
+                fetchGreetings();
+            } catch (e) {
+                // El alert ya está en apiRequest, no es necesario repetirlo
+            }
+        }
+        
+        // La URL de la API de admin ahora es /api/admin
+        async function runAdminAction(action, id = null, customMessage = null) {
+            try {
+                await apiRequest('/api/admin', 'POST', { action, id, customMessage });
+                fetchGreetings();
+            } catch (e) {
+                // El alert ya está en apiRequest, no es necesario repetirlo
+            }
+        }
+
+        function renderGreetings(greetings) {
+            GREETINGS_CONTAINER.innerHTML = '';
+            const sortedGreetings = greetings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            sortedGreetings.forEach(greeting => {
+                const greetingCard = document.createElement('div');
+                greetingCard.classList.add('greeting-card');
+                if (greeting.isGlowing) {
+                    greetingCard.classList.add('glowing');
+                }
+                const timestamp = new Date(greeting.timestamp).toLocaleString();
+                
+                let adminControls = '';
+                const isMyMessage = greeting.name.toLowerCase() === '@elmendez_2.0';
+                
+                // Muestra botones de borrado y edición si no es el mensaje del admin
+                if (!isMyMessage) {
+                    adminControls = `
+                        <div class="admin-controls">
+                            <button class="edit-btn" data-id="${greeting.id}">Editar</button>
+                            <button class="delete-btn" data-id="${greeting.id}">Borrar</button>
+                        </div>
+                    `;
+                }
+
+                let signature = '';
+                if (greeting.isGlowing) {
+                    signature = '<p class="signature-message">creado por @elmendez_2.0</p>';
+                }
+                
+                greetingCard.innerHTML = `
+                    <p class="author">${greeting.name}</p>
+                    <p>${greeting.message}</p>
+                    <p class="timestamp">${timestamp}</p>
+                    <p class="message-id">ID: ${greeting.id}</p>
+                    ${signature}
+                    ${adminControls}
+                `;
+                GREETINGS_CONTAINER.appendChild(greetingCard);
+            });
+            
+            // Añade los event listeners a los botones de forma dinámica
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = e.target.dataset.id;
+                    if (confirm(`¿Estás seguro de que quieres borrar el saludo con ID: ${id}?`)) {
+                        runAdminAction('borrar', id);
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = e.target.dataset.id;
+                    const newMessage = prompt('Ingresa el nuevo mensaje:');
+                    if (newMessage) {
+                        runAdminAction('editar', id, newMessage);
+                    }
+                });
+            });
+        }
+        
+        SUBMIT_BTN.addEventListener('click', () => {
+            const message = MESSAGE_INPUT.value.trim();
+            if (message) {
+                addGreeting(NAME_INPUT.value, message);
+            } else {
+                alert('Por favor, escribe un mensaje.');
+            }
+        });
+    </script>
+</body>
+  </html>
