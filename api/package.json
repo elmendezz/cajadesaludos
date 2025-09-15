@@ -2,6 +2,7 @@
   "name": "caja-de-saludos",
   "version": "1.0.0",
   "description": "Una cajita de saludos simple para Vercel.",
+"type": "module",
   "main": "index.html",
   "scripts": {
     "start": "vercel dev"
