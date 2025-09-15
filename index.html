@@ -192,12 +192,10 @@
     </div>
 
     <script>
-        // BOT Version:3
+        // BOT Version:5
         // Change Log:
-        // - Refactorización completa para usar una API de Vercel.
-        // - Las credenciales de GitHub ya no están en el código.
-        // - El cliente (navegador) se comunica con el servidor para obtener y enviar datos.
-        // - El botón de Admin ahora se maneja a través de la nueva API.
+        // - Se agregó la funcionalidad para editar el mensaje del "glow" a través de un prompt.
+        // - La lógica ahora busca el mensaje de admin y actualiza tanto el texto como el estado "isGlowing".
         
         const nameInput = document.getElementById('nameInput');
         const messageInput = document.getElementById('messageInput');
@@ -206,63 +204,55 @@
         const greetingsContainer = document.getElementById('greetingsContainer');
         const ADMIN_PIN = '26435';
 
+        // !!!!!!!!!!!! IMPORTANTE: REEMPLAZA ESTOS VALORES !!!!!!!!!!!!
+        // TOKEN: TU TOKEN PERSONAL DE GITHUB (con permiso de 'gist')
+        const GITHUB_TOKEN = '11BHOFUQA0blFz8Gz4fPlz_Of2S0HbvWYEAbPa5WwfUAgWl77BGZJuiuTPsGiYCa2mQ5HGEW2Bh5IfQQd2'; 
+        // GIST_ID: El ID del Gist que creaste (el código largo en la URL)
+        const GIST_ID = 'ef162d0104adac1b169cf5778d2a4183'; 
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
         async function fetchGreetings() {
             try {
-                // Ahora hacemos fetch a nuestra propia API de Vercel
-                const response = await fetch('/api/greetings');
-                if (!response.ok) throw new Error('Error al cargar los saludos');
-                const greetings = await response.json();
+                const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
+                const data = await response.json();
+                const fileContent = data.files['greetings.json'].content;
+                const greetings = JSON.parse(fileContent);
                 renderGreetings(greetings);
             } catch (e) {
                 console.error("Error al cargar los saludos: ", e);
-                alert("Ocurrió un error al cargar los saludos. Revisa la consola y tu API.");
+                alert("Ocurrió un error al cargar los saludos. Revisa la consola y tu GIST_ID.");
             }
         }
 
-        async function addGreeting(name, message) {
+        async function updateGreetings(newGreetings) {
             try {
-                const response = await fetch('/api/greetings', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ name, message })
+                const url = `https://api.github.com/gists/${GIST_ID}`;
+                const body = {
+                    files: {
+                        'greetings.json': {
+                            content: JSON.stringify(newGreetings, null, 2)
+                        }
+                    }
+                };
+                const headers = {
+                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Content-Type': 'application/json'
+                };
+
+                const response = await fetch(url, {
+                    method: 'PATCH',
+                    headers: headers,
+                    body: JSON.stringify(body)
                 });
 
                 if (!response.ok) {
                     const error = await response.json();
-                    throw new Error(error.error || 'Error al enviar el saludo');
+                    throw new Error(error.message || 'Error al actualizar el Gist');
                 }
-                
-                nameInput.value = '';
-                messageInput.value = '';
-                fetchGreetings(); // Refrescamos los saludos
-            } catch (e) {
-                console.error("Error al enviar el saludo: ", e);
-                alert(`Ocurrió un error al enviar el saludo: ${e.message}`);
-            }
-        }
-        
-        async function runAdminAction(action) {
-            try {
-                const response = await fetch('/api/admin', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ action })
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Error al ejecutar la acción de admin');
-                }
-                
-                alert(`Acción "${action}" ejecutada con éxito.`);
                 fetchGreetings();
             } catch (e) {
-                console.error("Error al ejecutar la acción de admin: ", e);
-                alert(`Ocurrió un error: ${e.message}`);
+                console.error("Error al actualizar el Gist: ", e);
+                alert("Ocurrió un error al guardar el saludo. Revisa tu GITHUB_TOKEN y los permisos.");
             }
         }
 
@@ -285,13 +275,36 @@
             });
         }
         
-        submitBtn.addEventListener('click', () => {
+        submitBtn.addEventListener('click', async () => {
             const name = nameInput.value.trim();
             const message = messageInput.value.trim();
-            if (name && message) {
-                addGreeting(name, message);
-            } else {
+
+            if (!name || !message) {
                 alert('Por favor, llena todos los campos.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
+                const data = await response.json();
+                const fileContent = data.files['greetings.json'].content;
+                const greetings = JSON.parse(fileContent);
+
+                const newGreeting = {
+                    name,
+                    message,
+                    timestamp: new Date().toISOString(),
+                    isGlowing: false
+                };
+                greetings.push(newGreeting);
+                
+                await updateGreetings(greetings);
+                
+                nameInput.value = '';
+                messageInput.value = '';
+            } catch (e) {
+                console.error("Error al enviar el saludo: ", e);
+                alert("Ocurrió un error al enviar el saludo. Revisa tu GIST_ID y el archivo JSON.");
             }
         });
 
@@ -302,10 +315,42 @@
                 
                 if (action && action.toLowerCase() === 'borrar') {
                     if (confirm('¿Estás seguro de que quieres borrar todos los saludos?')) {
-                        await runAdminAction('borrar');
+                        await updateGreetings([]);
+                        alert('Todos los saludos han sido borrados.');
                     }
                 } else if (action && action.toLowerCase() === 'glow') {
-                    await runAdminAction('glow');
+                    try {
+                        const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
+                        const data = await response.json();
+                        const fileContent = data.files['greetings.json'].content;
+                        const greetings = JSON.parse(fileContent);
+
+                        const adminMessage = prompt('Ingresa el mensaje para el glow:');
+
+                        // Busca un mensaje de admin existente o crea uno nuevo
+                        let adminGreeting = greetings.find(g => g.name === 'elmendezz' && g.isGlowing);
+                        
+                        if (adminGreeting) {
+                            // Si existe, actualiza el mensaje
+                            adminGreeting.message = adminMessage;
+                            adminGreeting.timestamp = new Date().toISOString();
+                        } else {
+                            // Si no existe, crea un nuevo mensaje de admin
+                            adminGreeting = {
+                                name: "elmendezz",
+                                message: adminMessage,
+                                timestamp: new Date().toISOString(),
+                                isGlowing: true
+                            };
+                            greetings.push(adminGreeting);
+                        }
+
+                        await updateGreetings(greetings);
+                        alert("¡Mensaje de admin con glow actualizado!");
+                    } catch (e) {
+                        console.error("Error al enviar el mensaje de admin: ", e);
+                        alert("Ocurrió un error al enviar el mensaje de admin. Revisa la consola para más detalles.");
+                    }
                 } else if (action !== null) {
                     alert('Acción no reconocida. (Solo se acepta "borrar" o "glow")');
                 }
