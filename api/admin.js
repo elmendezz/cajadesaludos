@@ -1,8 +1,8 @@
-// BOT Version: 4
+// BOT Version: 5
 // Dependencias: Ninguna, usa las de Vercel y la API de GitHub
 // Change Log:
-// - Se añade la acción 'editar' para cambiar el mensaje de un saludo por su ID.
-// - Se busca el saludo por 'id' para las acciones de 'borrar' y 'editar'.
+// - Se añade la nueva acción 'toggleGlow' para cambiar el estado del glow de un saludo por su ID.
+// - Se busca el saludo por 'id' para las acciones de 'borrar', 'editar' y 'toggleGlow'.
 
 import fetch from 'node-fetch';
 
@@ -103,16 +103,16 @@ export default async function handler(req, res) {
 
             await updateRepoFile(newGreetings, sha, `Saludo con ID ${id} ha sido editado por el admin.`);
             return res.status(200).json({ message: `Saludo con ID ${id} ha sido editado.` });
-        } else if (action === 'glow') { // Mantenemos la acción de glow por si la necesitas para algo más.
+        } else if (action === 'toggleGlow') {
             if (!id) {
-                return res.status(400).json({ error: 'ID del mensaje es requerido para marcar con glow.' });
+                return res.status(400).json({ error: 'ID del mensaje es requerido para cambiar el glow.' });
             }
             
             const newGreetings = greetings.map(g => {
                 if (g.id === id) {
                     return {
                         ...g,
-                        isGlowing: !g.isGlowing // Solo cambia el estado de glow
+                        isGlowing: !g.isGlowing // Aquí se toggler el estado
                     };
                 }
                 return g;
@@ -132,4 +132,4 @@ export default async function handler(req, res) {
         console.error(e);
         res.status(500).json({ error: e.message || 'No se pudo ejecutar la acción de admin. Revisa la consola.' });
     }
-    }
+                              }
