@@ -1,7 +1,8 @@
-// BOT Version: 1
+// BOT Version: 2
 // Dependencias: Ninguna, usa las de Vercel y la API de GitHub
 // Change Log:
-// - Se crea un nuevo endpoint para manejar los "Me Gusta".
+// - Se modifica la lógica para poder quitar likes.
+// - Se usa localStorage para rastrear los likes del usuario.
 
 import fetch from 'node-fetch';
 
@@ -36,19 +37,20 @@ async function getFileContent() {
 async function updateRepoFile(newContent, sha, message) {
     const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
     const body = {
-        message: message, 
+        message: message,
         content: Buffer.from(JSON.stringify(newContent, null, 2)).toString('base64'),
         sha: sha
     };
     const headers = {
         'Authorization': `token ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github.v3+json',
         'Content-Type': 'application/json'
     };
-
+    
     const response = await fetch(url, {
-        method: 'PUT',
-        headers: headers,
-        body: JSON.stringify(body)
+      method: 'PUT',
+      headers: headers,
+      body: JSON.stringify(body)
     });
 
     if (!response.ok) {
@@ -64,19 +66,26 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { id } = req.body;
-        if (!id) {
-            return res.status(400).json({ error: 'ID del mensaje es requerido para dar like.' });
+        const { id, action } = req.body;
+        if (!id || !action) {
+            return res.status(400).json({ error: 'ID del mensaje y la acción son requeridos.' });
         }
 
         const { content: greetings, sha } = await getFileContent();
         
         const newGreetings = greetings.map(g => {
             if (g.id === id) {
-                return {
-                    ...g,
-                    likes: (g.likes || 0) + 1
-                };
+                if (action === 'like') {
+                    return {
+                        ...g,
+                        likes: (g.likes || 0) + 1
+                    };
+                } else if (action === 'unlike') {
+                     return {
+                        ...g,
+                        likes: Math.max(0, (g.likes || 0) - 1)
+                    };
+                }
             }
             return g;
         });
@@ -86,11 +95,11 @@ export default async function handler(req, res) {
             return res.status(404).json({ error: 'No se encontró un saludo con ese ID.' });
         }
 
-        await updateRepoFile(newGreetings, sha, `Like añadido al saludo con ID ${id}`);
-        return res.status(200).json({ message: `Like añadido al saludo con ID ${id}` });
+        await updateRepoFile(newGreetings, sha, `Like/Unlike actualizado en saludo con ID ${id}`);
+        return res.status(200).json({ message: `Like/Unlike actualizado en saludo con ID ${id}` });
         
     } catch (e) {
         console.error(e);
-        res.status(500).json({ error: e.message || 'No se pudo dar like al mensaje. Revisa la consola.' });
+        res.status(500).json({ error: e.message || 'No se pudo actualizar el like. Revisa la consola.' });
     }
-                                         }
+                                            }
