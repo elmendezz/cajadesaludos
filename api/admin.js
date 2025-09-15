@@ -1,9 +1,8 @@
-// BOT Version: 3
+// BOT Version: 4
 // Dependencias: Ninguna, usa las de Vercel y la API de GitHub
 // Change Log:
-// - Se actualiza el endpoint para usar 'id' en lugar de 'index'.
-// - Se implementa la lógica para borrar un saludo por su 'id' específico.
-// - Se busca el saludo por 'id' para la acción 'glow'.
+// - Se añade la acción 'editar' para cambiar el mensaje de un saludo por su ID.
+// - Se busca el saludo por 'id' para las acciones de 'borrar' y 'editar'.
 
 import fetch from 'node-fetch';
 
@@ -82,7 +81,29 @@ export default async function handler(req, res) {
             await updateRepoFile(newGreetings, sha, `Saludo con ID ${id} ha sido borrado por el admin.`);
             return res.status(200).json({ message: `Saludo con ID ${id} ha sido borrado.` });
             
-        } else if (action === 'glow') {
+        } else if (action === 'editar') {
+            if (!id || !customMessage) {
+                return res.status(400).json({ error: 'ID y nuevo mensaje son requeridos para editar.' });
+            }
+            
+            const newGreetings = greetings.map(g => {
+                if (g.id === id) {
+                    return {
+                        ...g,
+                        message: customMessage // Solo actualizamos el mensaje
+                    };
+                }
+                return g;
+            });
+            
+            const targetGreeting = newGreetings.find(g => g.id === id);
+            if (!targetGreeting) {
+                return res.status(404).json({ error: 'No se encontró un saludo con ese ID.' });
+            }
+
+            await updateRepoFile(newGreetings, sha, `Saludo con ID ${id} ha sido editado por el admin.`);
+            return res.status(200).json({ message: `Saludo con ID ${id} ha sido editado.` });
+        } else if (action === 'glow') { // Mantenemos la acción de glow por si la necesitas para algo más.
             if (!id) {
                 return res.status(400).json({ error: 'ID del mensaje es requerido para marcar con glow.' });
             }
@@ -91,8 +112,7 @@ export default async function handler(req, res) {
                 if (g.id === id) {
                     return {
                         ...g,
-                        isGlowing: !g.isGlowing,
-                        message: customMessage || g.message // Usa el mensaje custom si existe
+                        isGlowing: !g.isGlowing // Solo cambia el estado de glow
                     };
                 }
                 return g;
@@ -112,4 +132,4 @@ export default async function handler(req, res) {
         console.error(e);
         res.status(500).json({ error: e.message || 'No se pudo ejecutar la acción de admin. Revisa la consola.' });
     }
-}
+    }
