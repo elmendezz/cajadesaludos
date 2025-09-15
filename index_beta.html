@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cajita De Saludos - elmendezz</title>
     <style>
+        /* BOT Version: 15 */
+        /* Change Log:
+         * - Se corrige el error de "página cortada" y se ajusta el CSS para una mejor visualización.
+         * - Se ajusta la posición del menú para que no cause problemas de superposición.
+         */
         :root {
             --bg-color-dark: #1a1a1a;
             --container-bg-dark: #222;
@@ -39,6 +44,22 @@
             --like-icon-color: #777;
         }
 
+        /* Fuente de Emojis */
+        @font-face {
+            font-family: 'NotoColorEmoji';
+            src: url('./NotoColorEmoji.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        body.emojis-disabled .like-icon {
+            font-family: sans-serif !important;
+        }
+        
+        .like-icon {
+            font-family: 'NotoColorEmoji', sans-serif;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg-color-dark);
@@ -53,6 +74,7 @@
             background-image: radial-gradient(circle, rgba(62, 102, 240, 0.1) 1px, transparent 1px);
             background-size: 20px 20px;
             transition: background-color 0.3s, color 0.3s;
+            position: relative;
         }
         
         .logo {
@@ -75,7 +97,8 @@
             50% { box-shadow: 0 0 20px var(--pulse-glow-end); }
             100% { box-shadow: 0 0 10px var(--pulse-glow-start); }
         }
-.container {
+
+        .container {
             width: 100%;
             max-width: 700px;
             background-color: var(--container-bg-dark);
@@ -124,6 +147,9 @@
             color: var(--text-color-dark);
             font-size: 24px;
             cursor: pointer;
+            position: absolute; /* Ajustado a absolute para no romper el layout */
+            left: 20px;
+            top: 20px;
             z-index: 1001;
             transition: opacity 0.3s ease-in-out;
         }
@@ -145,6 +171,8 @@
             box-shadow: 2px 0 5px rgba(0,0,0,0.5);
             transition: left 0.3s ease-in-out;
             z-index: 1000;
+            display: flex;
+            flex-direction: column;
         }
 
         .menu.open {
@@ -186,7 +214,24 @@
             text-decoration: none;
             display: block;
         }
-.search-container {
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-color-dark);
+            font-size: 1em;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            padding: 0;
+            transition: color 0.3s;
+        }
+        
+        .menu-btn:hover {
+            color: var(--accent-color);
+        }
+
+        .search-container {
             flex-grow: 1;
             margin: 0 20px;
         }
@@ -206,19 +251,6 @@
         #searchInput:focus {
             border-color: var(--accent-color);
             box-shadow: 0 0 0 3px var(--glow-color);
-        }
-
-        #themeToggleBtn {
-            background: none;
-            border: none;
-            color: var(--text-color-dark);
-            font-size: 20px;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        #themeToggleBtn:hover {
-            color: var(--accent-color);
         }
 
         .greetings-list {
@@ -483,109 +515,156 @@
             box-shadow: 0 0 10px var(--glow-color);
         }
 
-        /* ESTILOS DEL DISCLAIMER */
-        #disclaimer-overlay {
+        /* Estilos del menú */
+        .menu {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            height: 100%;
+            width: 280px;
+            background-color: var(--container-bg-dark);
+            border-right: 1px solid var(--border-color-dark);
+            padding: 20px;
+            box-shadow: 2px 0 10px var(--shadow-color);
+            transition: left 0.3s ease;
+            z-index: 999;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .menu.open {
+            left: 0;
+        }
+
+        .menu-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.85);
-            backdrop-filter: blur(8px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
-        }
-
-        #disclaimer-box {
-            background-color: var(--container-bg-dark);
-            padding: 40px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color-dark);
-            box-shadow: 0 4px 60px var(--shadow-color);
-            text-align: center;
-            width: 90%;
-            max-width: 500px;
-            animation: fadeIn 0.5s ease;
-        }
-
-        #disclaimer-box h2 {
-            font-size: 1.8em;
-            margin-bottom: 20px;
-            color: var(--accent-color);
-        }
-
-        #disclaimer-box p {
-            font-size: 1.1em;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-
-        #disclaimer-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        .disclaimer-btn {
-            padding: 15px 30px;
-            border: 1px solid var(--border-color-dark);
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .disclaimer-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        #accept-dark {
-            background-color: var(--card-bg-dark);
-            color: var(--text-color-dark);
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
         
-        #accept-light {
-            background-color: #f9f9f9;
-            color: #333;
+        .menu-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .menu-btn {
+            display: block;
+            width: 100%;
+            background: var(--card-bg-dark);
+            border: 1px solid var(--border-color-dark);
+            color: var(--text-color-dark);
+            padding: 8px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .menu-btn:hover {
+            background: var(--accent-color);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+        
+        .menu h3 {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 5px;
+        }
+
+        .version-log {
+            font-size: 0.9em;
+            color: var(--text-color-dark);
+            margin-top: 20px;
+        }
+
+        .version-log h4 {
+            margin-top: 15px;
+            margin-bottom: 5px;
+            color: var(--signature-color);
+        }
+        
+        .version-log p {
+            margin: 5px 0;
+        }
+
+        .expand-btn {
+            display: block;
+            width: 100%;
+            background: var(--card-bg-dark);
+            border: 1px solid var(--border-color-dark);
+            color: var(--text-color-dark);
+            padding: 8px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .expand-btn:hover {
+            background: var(--accent-color);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        #changelog-content {
+            max-height: 150px;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        
+        #changelog-content.expanded {
+            max-height: 1000px;
         }
 
     </style>
 </head>
 <body>
 
-    <div id="disclaimer-overlay">
-        <div id="disclaimer-box">
-            <h2>¡Oye tú!</h2>
-            <p>Al presionar en el botón "Aceptar" estás aceptando que aquí en este sitio puede haber funas, groserías o otras cosas así.</p>
-            <div id="disclaimer-buttons">
-                <button class="disclaimer-btn" id="accept-dark">Aceptar (Modo Oscuro)</button>
-                <button class="disclaimer-btn" id="accept-light">Aceptar (Modo Claro)</button>
+    <div class="menu-toggle-btn">☰</div>
+    <div class="menu" id="sidebar">
+        <h3>Menú</h3>
+        <button id="themeToggleBtn" class="menu-btn">Cambiar Tema</button>
+        <button id="emojiToggleBtn" class="menu-btn">Activar/Desactivar Emojis</button>
+        <a href="index_admin.html" class="menu-btn">Panel de Admin</a>
+        
+        <div class="version-log">
+            <h4>Historial de Cambios</h4>
+            <div id="changelog-content">
+                <p><b>v15</b> - Se corrige el error de "página cortada" y se ajusta el CSS del menú.</p>
+                <p><b>v14</b> - Se añade el historial de cambios al menú de hamburguesa. Se ajusta el CSS para evitar la superposición del menú.</p>
+                <p><b>v13</b> - Se corrige el error al mover el botón de tema y se integra en el menú de hamburguesa. Se añade un nuevo botón en el menú para activar/desactivar la fuente de emojis "NotoColorEmoji".</p>
+                <p><b>v12</b> - Se mueven los botones de tema y emojis al menú de hamburguesa. Se añade la lógica de un "toggle" para los emojis. Se actualiza el script para mantener las funciones de administración y añadir las del menú.</p>
+                <p><b>v11</b> - Se corrige el error al pasar el código y solo se aplica el estilo de index.html a index_admin.html. Se actualiza el script para mantener las funciones de administración y añadir las del menú.</p>
+                <p><b>v10</b> - Se corrige el error de diseño y se copia el código completo de index.html a index_admin.html para mantener el estilo consistente.</p>
+                <p><b>v9</b> - Se corrige el error de diseño y se añade el menú de hamburguesa con historial de cambios y función de expandir.</p>
+                <p><b>v8</b> - Se revierte el diseño para mantener el original, con emojis personalizados.</p>
+                <p><b>v7</b> - Se cambia la fuente de emojis al formato .ttf local.</p>
+                <p><b>v6</b> - Se mejora el diseño para que coincida con el tema oscuro de @elmendez_2.0.</p>
+                <p><b>v5</b> - Se agrega la funcionalidad de likes y unlikes a los mensajes.</p>
+                <p><b>v4</b> - Se añade un sistema de filtrado de mensajes y búsqueda.</p>
+                <p><b>v3</b> - Se implementa un panel de administración con PIN.</p>
+                <p><b>v2</b> - Se añade el botón de modo oscuro/claro.</p>
+                <p><b>v1</b> - Versión inicial con la caja de saludos.</p>
             </div>
+            <button id="expand-btn" class="expand-btn">Expandir</button>
         </div>
     </div>
-
-    <div class="menu">
-        <ul class="menu-list">
-            <li class="menu-item">
-                <button id="themeToggleBtn">Cambiar Tema</button>
-            </li>
-            <li class="menu-item">
-                <a href="#">Inicio</a>
-            </li>
-        </ul>
-    </div>
-
+    
     <div class="menu-overlay"></div>
 
     <div class="container">
         <header>
             <div class="controls">
-                <button class="menu-toggle-btn">☰</button>
                 <div class="search-container">
                     <input type="text" id="searchInput" placeholder="Buscar ...">
                 </div>
@@ -618,9 +697,10 @@
             <ul class="greetings-list" id="greetingsList">
                 </ul>
         </section>
-<div id="modalInfo" class="modal">
+
+        <div id="modalInfo" class="modal">
             <div class="modal-content">
-                <span class="close-btn">×</span>
+                <span class="close-btn">&times;</span>
                 <div class="modal-info">
                     <p><strong>ID:</strong> <span id="modalId"></span></p>
                     <p><strong>Nombre:</strong> <span id="modalName"></span></p>
@@ -632,17 +712,16 @@
         </div>
 
         <footer>
-            <p>Hecho por @elmendez_2.0 | <a href="index_admin.html">Admin Panel</a></p>
+            <p>Hecho por @elmendez_2.0</p>
         </footer>
     </div>
 <script>
-        // BOT Version: 13
+        // BOT Version: 15
         // Dependencias: Ninguna.
         // Change Log:
-        // - Se agrega un cartel de disclaimer al cargar la página.
-        // - El cartel tiene dos botones para aceptar y elegir el tema (claro/oscuro).
-        // - La elección se guarda en localStorage y el cartel no vuelve a aparecer.
-
+        // - Se corrige el error de "página cortada" y se ajusta el CSS del menú.
+        // - Se ajusta la posición del menú para que no cause problemas de superposición.
+        
         const API_URL = '/api/greetings.js';
         const LIKE_API_URL = '/api/like.js';
         const GREETINGS_LIST = document.getElementById('greetingsList');
@@ -650,6 +729,7 @@
         const MESSAGE_INPUT = document.getElementById('messageInput');
         const FORM = document.getElementById('greetingForm');
         const THEME_TOGGLE_BTN = document.getElementById('themeToggleBtn');
+        const EMOJI_TOGGLE_BTN = document.getElementById('emojiToggleBtn');
         const SEARCH_INPUT = document.getElementById('searchInput');
         const MENU_TOGGLE_BTN = document.querySelector('.menu-toggle-btn');
         const MENU = document.querySelector('.menu');
@@ -657,15 +737,13 @@
         const INFO_MODAL = document.getElementById('modalInfo');
         const CLOSE_MODAL_BTN = document.querySelector('.modal .close-btn');
         const TAB_BUTTONS = document.querySelectorAll('.tab-btn');
-
-        // Nuevas constantes para el disclaimer
-        const DISCLAIMER_OVERLAY = document.getElementById('disclaimer-overlay');
-        const ACCEPT_DARK_BTN = document.getElementById('accept-dark');
-        const ACCEPT_LIGHT_BTN = document.getElementById('accept-light');
+        const CHANGELOG_CONTENT = document.getElementById('changelog-content');
+        const EXPAND_BTN = document.getElementById('expand-btn');
+        
 
         let allGreetings = [];
         let likedGreetings = JSON.parse(localStorage.getItem('likedGreetings')) || {};
-
+        
         async function fetchGreetings() {
             try {
                 const response = await fetch(API_URL);
@@ -781,7 +859,8 @@
                 });
             });
         }
-function showInfoModal(greeting) {
+
+        function showInfoModal(greeting) {
             document.getElementById('modalId').textContent = greeting.id;
             document.getElementById('modalName').textContent = greeting.name;
             document.getElementById('modalMessage').textContent = greeting.message;
@@ -808,6 +887,12 @@ function showInfoModal(greeting) {
             const isLightMode = document.body.classList.contains('light-mode');
             localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
         });
+        
+        EMOJI_TOGGLE_BTN.addEventListener('click', () => {
+            document.body.classList.toggle('emojis-disabled');
+            const areEmojisDisabled = document.body.classList.contains('emojis-disabled');
+            localStorage.setItem('emojis-disabled', areEmojisDisabled ? 'true' : 'false');
+        });
 
         MENU_TOGGLE_BTN.addEventListener('click', () => {
             MENU.classList.toggle('open');
@@ -819,6 +904,15 @@ function showInfoModal(greeting) {
             MENU.classList.remove('open');
             MENU_OVERLAY.classList.remove('open');
             document.body.classList.remove('menu-open');
+        });
+        
+        EXPAND_BTN.addEventListener('click', () => {
+            CHANGELOG_CONTENT.classList.toggle('expanded');
+            if (CHANGELOG_CONTENT.classList.contains('expanded')) {
+                EXPAND_BTN.textContent = 'Colapsar';
+            } else {
+                EXPAND_BTN.textContent = 'Expandir';
+            }
         });
         
         CLOSE_MODAL_BTN.addEventListener('click', () => {
@@ -848,47 +942,20 @@ function showInfoModal(greeting) {
             );
             renderGreetings(filteredGreetings);
         });
-        
-        // Lógica del disclaimer
-        function checkDisclaimer() {
-            const disclaimerAccepted = localStorage.getItem('disclaimerAccepted');
-            if (disclaimerAccepted) {
-                DISCLAIMER_OVERLAY.style.display = 'none';
-                // Si ya fue aceptado, aplicamos el tema guardado
-                const savedTheme = localStorage.getItem('theme');
-                if (savedTheme === 'light') {
-                    document.body.classList.add('light-mode');
-                }
-                fetchGreetings();
-                // Actualización automática cada 10 segundos
-                setInterval(fetchGreetings, 10000); 
-            } else {
-                DISCLAIMER_OVERLAY.style.display = 'flex';
-                // Ocultamos el resto del contenido hasta que el usuario acepte
-                document.body.style.overflow = 'hidden';
+
+        window.onload = () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
             }
-        }
-
-        ACCEPT_DARK_BTN.addEventListener('click', () => {
-            localStorage.setItem('disclaimerAccepted', 'true');
-            localStorage.setItem('theme', 'dark');
-            DISCLAIMER_OVERLAY.style.display = 'none';
-            document.body.style.overflow = '';
+            const emojisDisabled = localStorage.getItem('emojis-disabled');
+            if (emojisDisabled === 'true') {
+                document.body.classList.add('emojis-disabled');
+            }
             fetchGreetings();
-            setInterval(fetchGreetings, 10000);
-        });
-
-        ACCEPT_LIGHT_BTN.addEventListener('click', () => {
-            localStorage.setItem('disclaimerAccepted', 'true');
-            localStorage.setItem('theme', 'light');
-            document.body.classList.add('light-mode');
-            DISCLAIMER_OVERLAY.style.display = 'none';
-            document.body.style.overflow = '';
-            fetchGreetings();
-            setInterval(fetchGreetings, 10000);
-        });
-        
-        window.onload = checkDisclaimer;
+            // Actualización automática cada 10 segundos
+            setInterval(fetchGreetings, 10000); 
+        };
     </script>
 </body>
 </html>

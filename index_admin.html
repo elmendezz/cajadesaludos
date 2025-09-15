@@ -5,10 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - elmendez</title>
     <style>
+        /* BOT Version: 14 */
+        /* Change Log:
+         * - Se corrige el error de superposición del botón del menú de hamburguesa.
+         * - Se añade un padding superior al body para dar espacio al menú fijo y evitar que la página se vea "cortada".
+         */
+        :root {
+            --bg-color-dark: #1a1a1a;
+            --container-bg-dark: #222;
+            --card-bg-dark: #282828;
+            --text-color-dark: #e0e0e0;
+            --border-color-dark: #333;
+            --form-bg-dark: #333;
+            --accent-color: #3e66f0;
+            --glow-color: rgba(62, 102, 240, 0.5);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --pulse-glow-start: rgba(62, 102, 240, 0.5);
+            --pulse-glow-end: rgba(62, 102, 240, 1.0);
+            --signature-color: #555;
+            --like-color: #f03e3e;
+            --like-icon-color: #e0e0e0;
+        }
+
+        /* Tema Claro */
+        body.light-mode {
+            --bg-color-dark: #f0f2f5;
+            --container-bg-dark: #fff;
+            --card-bg-dark: #f9f9f9;
+            --text-color-dark: #333;
+            --border-color-dark: #ddd;
+            --form-bg-dark: #eee;
+            --glow-color: rgba(62, 102, 240, 0.2);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --pulse-glow-start: rgba(62, 102, 240, 0.2);
+            --pulse-glow-end: rgba(62, 102, 240, 0.5);
+            --signature-color: #bbb;
+            --like-color: #f03e3e;
+            --like-icon-color: #777;
+        }
+
+        /* EMOJIS PERSONALIZADOS */
+        @font-face {
+            font-family: 'NotoColorEmoji';
+            src: url('./NotoColorEmoji.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        body.emojis-disabled .like-icon {
+            font-family: sans-serif !important;
+        }
+        
+        .like-icon {
+            font-family: 'NotoColorEmoji', sans-serif;
+        }
+
+        /* ESTILOS DEL USUARIO ORIGINALES Y AÑADIDOS */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #1a1a1a;
-            color: #e0e0e0;
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -18,18 +74,26 @@
             box-sizing: border-box;
             background-image: radial-gradient(circle, rgba(62, 102, 240, 0.1) 1px, transparent 1px);
             background-size: 20px 20px;
+            transition: background-color 0.3s, color 0.3s;
+            position: relative;
+            padding-top: 60px; /* Se añade padding superior para el menú fijo */
+        }
+        
+        body.menu-open {
+            overflow: hidden;
         }
 
         .container {
             width: 100%;
             max-width: 700px;
-            background-color: #222;
+            background-color: var(--container-bg-dark);
             border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 4px 60px rgba(0, 0, 0, 0.3);
-            border: 1px solid #333;
+            box-shadow: 0 4px 60px var(--shadow-color);
+            border: 1px solid var(--border-color-dark);
             animation: fadeIn 1s ease-in-out;
             display: none; /* Oculto por defecto hasta ingresar el PIN */
+            margin-top: 0; /* Se elimina el margen superior */
         }
 
         @keyframes fadeIn {
@@ -40,28 +104,30 @@
         header {
             text-align: center;
             margin-bottom: 20px;
+            position: relative;
         }
 
         header h1 {
             font-size: 2.5em;
-            color: #fff;
+            color: var(--accent-color);
             margin: 0;
-            text-shadow: 0 0 10px rgba(62, 102, 240, 0.5);
+            text-shadow: 0 0 10px var(--glow-color);
         }
-
+        
         .form-section, .greetings-section {
-            background-color: #282828;
+            background-color: var(--card-bg-dark);
             padding: 20px;
             border-radius: 15px;
             margin-top: 20px;
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color-dark);
         }
 
         .form-section h2, .greetings-section h2 {
-            color: #3e66f0;
+            color: var(--accent-color);
             font-size: 1.5em;
             margin-top: 0;
-            border-bottom: 2px solid #3e66f0;
+            border-bottom: 2px solid var(--accent-color);
             padding-bottom: 5px;
         }
 
@@ -69,9 +135,9 @@
             width: 100%;
             padding: 12px;
             margin-bottom: 15px;
-            background-color: #333;
-            border: 1px solid #555;
-            color: #e0e0e0;
+            background-color: var(--form-bg-dark);
+            border: 1px solid var(--border-color-dark);
+            color: var(--text-color-dark);
             border-radius: 8px;
             font-size: 1em;
             box-sizing: border-box;
@@ -80,14 +146,14 @@
 
         input[type="text"]:focus, textarea:focus {
             outline: none;
-            border-color: #3e66f0;
-            box-shadow: 0 0 0 3px rgba(62, 102, 240, 0.3);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--glow-color);
         }
 
         button {
             width: 100%;
             padding: 12px;
-            background-color: #3e66f0;
+            background-color: var(--accent-color);
             color: #fff;
             border: none;
             border-radius: 8px;
@@ -102,7 +168,7 @@
         }
         
         .greetings-section {
-            padding: 0;
+            padding: 20px;
         }
 
         #greetingsContainer {
@@ -113,28 +179,28 @@
         }
 
         .greeting-card {
-            background-color: #333;
+            background-color: var(--form-bg-dark);
             padding: 15px;
             border-radius: 10px;
-            border-left: 5px solid #3e66f0;
+            border-left: 5px solid var(--accent-color);
             transition: transform 0.2s ease;
             position: relative;
         }
 
         .greeting-card:hover {
-            transform: scale(1.02);
+            transform: scale(1.01);
         }
         
         .greeting-card.glowing {
-            background-color: #1c274a;
-            border-color: #3e66f0;
-            box-shadow: 0 0 15px rgba(62, 102, 240, 0.8);
+            background-color: rgba(62, 102, 240, 0.1);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px var(--glow-color);
             animation: pulse-glow 2s infinite alternate;
         }
-
+        
         @keyframes pulse-glow {
-            from { box-shadow: 0 0 10px rgba(62, 102, 240, 0.5); }
-            to { box-shadow: 0 0 20px rgba(62, 102, 240, 1.0); }
+            from { box-shadow: 0 0 10px var(--pulse-glow-start); }
+            to { box-shadow: 0 0 20px var(--pulse-glow-end); }
         }
 
         .greeting-card p {
@@ -150,7 +216,7 @@
 
         .greeting-card .timestamp {
             font-size: 0.75em;
-            color: #999;
+            color: var(--signature-color);
             text-align: right;
             margin-top: 10px;
         }
@@ -164,7 +230,7 @@
         
         .signature-message {
             font-size: 0.7em;
-            color: #666;
+            color: var(--signature-color);
             text-align: right;
             margin-top: 5px;
         }
@@ -203,10 +269,207 @@
         .admin-controls .toggle-glow-btn:hover {
             background-color: #c8a32a;
         }
+
+        /* ESTILOS DEL MENÚ DE HAMBURGUESA */
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            background: var(--card-bg-dark);
+            border: 1px solid var(--border-color-dark);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .hamburger-menu:hover {
+            transform: scale(1.1);
+        }
+
+        .hamburger-icon, .hamburger-icon::before, .hamburger-icon::after {
+            width: 20px;
+            height: 2px;
+            background-color: var(--text-color-dark);
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-icon::before, .hamburger-icon::after {
+            content: '';
+            position: absolute;
+        }
+
+        .hamburger-icon::before {
+            transform: translateY(-6px);
+        }
+
+        .hamburger-icon::after {
+            transform: translateY(6px);
+        }
+        
+        .hamburger-menu.open .hamburger-icon {
+            transform: rotate(45deg);
+            background-color: transparent;
+        }
+
+        .hamburger-menu.open .hamburger-icon::before {
+            transform: rotate(90deg) translate(6px);
+        }
+
+        .hamburger-menu.open .hamburger-icon::after {
+            transform: rotate(90deg) translate(-6px);
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 280px;
+            height: 100%;
+            background-color: var(--container-bg-dark);
+            border-right: 1px solid var(--border-color-dark);
+            z-index: 99;
+            transition: left 0.3s ease;
+            padding: 20px;
+            box-sizing: border-box;
+            box-shadow: 2px 0 10px var(--shadow-color);
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 98;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sidebar h3 {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 5px;
+        }
+        
+        .version-log {
+            font-size: 0.9em;
+            color: var(--text-color-dark);
+        }
+
+        .version-log h4 {
+            margin-top: 15px;
+            margin-bottom: 5px;
+            color: var(--signature-color);
+        }
+
+        .version-log ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+        
+        .expand-btn {
+            display: block;
+            width: 100%;
+            background: var(--card-bg-dark);
+            border: 1px solid var(--border-color-dark);
+            color: var(--text-color-dark);
+            padding: 8px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .expand-btn:hover {
+            background: var(--accent-color);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        #changelog-content {
+            max-height: 150px;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        
+        #changelog-content.expanded {
+            max-height: 1000px;
+        }
+        
+        .menu-btn {
+            display: block;
+            width: 100%;
+            background: var(--card-bg-dark);
+            border: 1px solid var(--border-color-dark);
+            color: var(--text-color-dark);
+            padding: 8px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .menu-btn:hover {
+            background: var(--accent-color);
+            color: #fff;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
-
+    <div class="hamburger-menu" id="hamburgerMenu">
+        <div class="hamburger-icon"></div>
+    </div>
+    
+    <div class="sidebar" id="sidebar">
+        <h3>Menú</h3>
+        <button id="themeToggle" class="menu-btn">☀️ Cambiar Tema</button>
+        <button id="emojiToggle" class="menu-btn">Activar/Desactivar Emojis</button>
+        <a href="/" class="menu-btn" style="color: var(--accent-color);">Cajita de Saludos</a>
+        
+        <div class="version-log">
+            <h4>Historial de Cambios</h4>
+            <div id="changelog-content">
+                <p><b>v14</b> - Se corrige el error de superposición del botón del menú de hamburguesa. Se añade un padding superior al body para dar espacio al menú fijo y evitar que la página se vea "cortada".</p>
+                <p><b>v13</b> - Se corrige el error en la superposición del botón del menú de hamburguesa. Se reajusta el margen superior del contenedor principal para evitar que el botón lo oculte.</p>
+                <p><b>v12</b> - Se mueven los botones de tema y emojis al menú de hamburguesa. Se añade la lógica de un "toggle" para los emojis. Se actualiza el script para mantener las funciones de administración y añadir las del menú.</p>
+                <p><b>v11</b> - Se corrige el error al pasar el código y solo se aplica el estilo de index.html a index_admin.html. Se actualiza el script para mantener las funciones de administración y añadir las del menú.</p>
+                <p><b>v10</b> - Se corrige el error de diseño y se copia el código completo de index.html a index_admin.html para mantener el estilo consistente.</p>
+                <p><b>v9</b> - Se corrige el error de diseño y se añade el menú de hamburguesa con historial de cambios y función de expandir.</p>
+                <p><b>v8</b> - Se revierte el diseño para mantener el original, con emojis personalizados.</p>
+                <p><b>v7</b> - Se cambia la fuente de emojis al formato .ttf local.</p>
+                <p><b>v6</b> - Se mejora el diseño para que coincida con el tema oscuro de @elmendez_2.0.</p>
+                <p><b>v5</b> - Se agrega la funcionalidad de likes y unlikes a los mensajes.</p>
+                <p><b>v4</b> - Se añade un sistema de filtrado de mensajes y búsqueda.</p>
+                <p><b>v3</b> - Se implementa un panel de administración con PIN.</p>
+                <p><b>v2</b> - Se añade el botón de modo oscuro/claro.</p>
+                <p><b>v1</b> - Versión inicial con la caja de saludos.</p>
+            </div>
+            <button id="expand-btn" class="expand-btn">Expandir</button>
+        </div>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+    
     <div class="container">
         <header>
             <h1>Panel de Administración</h1>
@@ -225,12 +488,11 @@
             </div>
         </section>
     </div>
-
     <script>
-        // BOT Version: 6
+        // BOT Version: 14
         // Change Log:
-        // - Se añade un botón "Toggle Glow" para activar/desactivar el efecto.
-        // - Se actualiza la lógica para que el admin pueda enviar mensajes con glow automático.
+        // - Se corrige el error de superposición del botón del menú de hamburguesa.
+        // - Se añade un padding superior al body para dar espacio al menú fijo y evitar que la página se vea "cortada".
         
         const ADMIN_PIN = '26435';
         const CONTAINER = document.querySelector('.container');
@@ -238,15 +500,36 @@
         const MESSAGE_INPUT = document.getElementById('messageInput');
         const SUBMIT_BTN = document.getElementById('submitBtn');
         const GREETINGS_CONTAINER = document.getElementById('greetingsContainer');
-
+        const THEME_TOGGLE = document.getElementById('themeToggle');
+        const EMOJI_TOGGLE = document.getElementById('emojiToggle');
+        
+        const HAMBURGER_MENU = document.getElementById('hamburgerMenu');
+        const SIDEBAR = document.getElementById('sidebar');
+        const OVERLAY = document.getElementById('overlay');
+        const CHANGELOG_CONTENT = document.getElementById('changelog-content');
+        const EXPAND_BTN = document.getElementById('expand-btn');
+        
         window.onload = function() {
             const pin = prompt('Ingresa el PIN de administrador para acceder:');
             if (pin === ADMIN_PIN) {
                 CONTAINER.style.display = 'block';
                 fetchGreetings();
+                setInterval(fetchGreetings, 10000); 
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'light') {
+                    document.body.classList.add('light-mode');
+                    THEME_TOGGLE.textContent = '🌙 Cambiar Tema';
+                } else {
+                    THEME_TOGGLE.textContent = '☀️ Cambiar Tema';
+                }
+                
+                const emojisDisabled = localStorage.getItem('emojis-disabled');
+                if (emojisDisabled === 'true') {
+                    document.body.classList.add('emojis-disabled');
+                }
             } else {
                 alert('PIN incorrecto. Acceso denegado.');
-                window.close();
+                window.location.href = '/';
             }
         };
 
@@ -289,7 +572,6 @@
 
         async function addGreeting(name, message) {
             try {
-                // El backend ahora maneja el glow automático
                 await apiRequest('/api/greetings', 'POST', { name, message });
                 
                 MESSAGE_INPUT.value = '';
@@ -322,7 +604,6 @@
                 let adminControls = '';
                 const isMyMessage = greeting.name.toLowerCase() === '@elmendez_2.0';
                 
-                // Muestra botones de borrado y edición si no es el mensaje del admin
                 if (!isMyMessage) {
                     adminControls = `
                         <div class="admin-controls">
@@ -332,7 +613,6 @@
                         </div>
                     `;
                 } else {
-                    // Si es tu mensaje, solo le pones un toggle de glow y borrado
                     adminControls = `
                         <div class="admin-controls">
                             <button class="toggle-glow-btn" data-id="${greeting.id}">Toggle Glow</button>
@@ -357,7 +637,6 @@
                 GREETINGS_CONTAINER.appendChild(greetingCard);
             });
             
-            // Añade los event listeners a los botones de forma dinámica
             document.querySelectorAll('.delete-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const id = e.target.dataset.id;
@@ -393,6 +672,42 @@
                 alert('Por favor, escribe un mensaje.');
             }
         });
+        
+        THEME_TOGGLE.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            const isLightMode = document.body.classList.contains('light-mode');
+            localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
+            THEME_TOGGLE.textContent = isLightMode ? '🌙 Cambiar Tema' : '☀️ Cambiar Tema';
+        });
+        
+        EMOJI_TOGGLE.addEventListener('click', () => {
+            document.body.classList.toggle('emojis-disabled');
+            const areEmojisDisabled = document.body.classList.contains('emojis-disabled');
+            localStorage.setItem('emojis-disabled', areEmojisDisabled ? 'true' : 'false');
+        });
+
+        HAMBURGER_MENU.addEventListener('click', () => {
+            SIDEBAR.classList.toggle('open');
+            OVERLAY.classList.toggle('open');
+            HAMBURGER_MENU.classList.toggle('open');
+            document.body.classList.toggle('menu-open');
+        });
+        
+        OVERLAY.addEventListener('click', () => {
+            SIDEBAR.classList.remove('open');
+            OVERLAY.classList.remove('open');
+            HAMBURGER_MENU.classList.remove('open');
+            document.body.classList.remove('menu-open');
+        });
+        
+        EXPAND_BTN.addEventListener('click', () => {
+            CHANGELOG_CONTENT.classList.toggle('expanded');
+            if (CHANGELOG_CONTENT.classList.contains('expanded')) {
+                EXPAND_BTN.textContent = 'Colapsar';
+            } else {
+                EXPAND_BTN.textContent = 'Expandir';
+            }
+        });
     </script>
 </body>
-</html>
+</html
