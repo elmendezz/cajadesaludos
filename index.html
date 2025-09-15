@@ -54,7 +54,28 @@
             background-size: 20px 20px;
             transition: background-color 0.3s, color 0.3s;
         }
-            .container {
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--accent-color);
+            box-shadow: 0 0 10px var(--glow-color);
+            margin-bottom: 20px;
+            animation: pulse-glow 2s infinite ease-in-out;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 10px var(--pulse-glow-start); }
+            50% { box-shadow: 0 0 20px var(--pulse-glow-end); }
+            100% { box-shadow: 0 0 10px var(--pulse-glow-start); }
+        }
+        .container {
             width: 100%;
             max-width: 700px;
             background-color: var(--container-bg-dark);
@@ -164,8 +185,8 @@
             color: var(--text-color-dark);
             text-decoration: none;
             display: block;
-                }
-            .search-container {
+        }
+        .search-container {
             flex-grow: 1;
             margin: 0 20px;
         }
@@ -432,9 +453,37 @@
         .modal-info {
             padding-top: 20px;
         }
+
+        .section-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: 1px solid var(--border-color-dark);
+            border-radius: 20px;
+            background-color: var(--form-bg-dark);
+            color: var(--text-color-dark);
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .tab-btn:hover {
+            background-color: #444;
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px var(--glow-color);
+        }
     </style>
 </head>
-<body class="">
+<body>
 
     <div class="menu">
         <ul class="menu-list">
@@ -451,6 +500,7 @@
 
     <div class="container">
         <header>
+            <img src="logo.jpg" alt="Logo" class="logo">
             <div class="controls">
                 <button class="menu-toggle-btn">☰</button>
                 <div class="search-container">
@@ -475,6 +525,11 @@
             </form>
         </div>
 
+        <div class="section-tabs">
+            <button class="tab-btn active" data-filter="new">Mensajes Nuevos</button>
+            <button class="tab-btn" data-filter="old">Mensajes Viejos</button>
+        </div>
+
         <section id="greetingsSection">
             <ul class="greetings-list" id="greetingsList">
                 </ul>
@@ -497,13 +552,13 @@
         </footer>
     </div>
     <script>
-        // BOT Version: 9
+        // BOT Version: 10
         // Dependencias: Ninguna.
         // Change Log:
-        // - Se mueve el formulario a la parte superior de la página.
-        // - Se elimina la obligatoriedad del campo 'nombre'.
-        // - Si el campo 'nombre' está vacío, se asigna 'Usuario Anónimo'.
-        // - El botón de menú de hamburguesa se oculta al abrir el menú.
+        // - Se añade logo con estilo de foto de perfil.
+        // - Se agrega espacio entre el formulario y los mensajes.
+        // - Los mensajes se ordenan por fecha, del más reciente al más antiguo.
+        // - Se añaden secciones "Mensajes Nuevos" y "Mensajes Viejos" con la lógica de filtrado.
 
         const API_URL = '/api/greetings.js';
         const LIKE_API_URL = '/api/like.js';
@@ -518,6 +573,7 @@
         const MENU_OVERLAY = document.querySelector('.menu-overlay');
         const INFO_MODAL = document.getElementById('modalInfo');
         const CLOSE_MODAL_BTN = document.querySelector('.modal .close-btn');
+        const TAB_BUTTONS = document.querySelectorAll('.tab-btn');
 
         let allGreetings = [];
         let likedGreetings = JSON.parse(localStorage.getItem('likedGreetings')) || {};
@@ -528,12 +584,25 @@
                 if (!response.ok) {
                     throw new Error('No se pudieron obtener los saludos.');
                 }
-                allGreetings = await response.json();
-                renderGreetings(allGreetings);
+                const rawGreetings = await response.json();
+                allGreetings = rawGreetings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                filterAndRenderGreetings();
             } catch (e) {
                 console.error('Error:', e);
                 GREETINGS_LIST.innerHTML = `<li style="text-align: center; color: var(--like-color);">No se pudieron cargar los saludos.</li>`;
             }
+        }
+        
+        function filterAndRenderGreetings() {
+            const activeTab = document.querySelector('.tab-btn.active').dataset.filter;
+            let filteredGreetings = allGreetings;
+
+            if (activeTab === 'new') {
+                filteredGreetings = allGreetings.filter(g => g.isGlowing);
+            } else if (activeTab === 'old') {
+                filteredGreetings = allGreetings.filter(g => !g.isGlowing);
+            }
+            renderGreetings(filteredGreetings);
         }
 
         async function postGreeting(name, message) {
@@ -624,7 +693,7 @@
                 });
             });
         }
-            function showInfoModal(greeting) {
+        function showInfoModal(greeting) {
             document.getElementById('modalId').textContent = greeting.id;
             document.getElementById('modalName').textContent = greeting.name;
             document.getElementById('modalMessage').textContent = greeting.message;
@@ -673,6 +742,14 @@
                 INFO_MODAL.style.display = 'none';
             }
         }
+        
+        TAB_BUTTONS.forEach(btn => {
+            btn.addEventListener('click', () => {
+                TAB_BUTTONS.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filterAndRenderGreetings();
+            });
+        });
 
         SEARCH_INPUT.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
