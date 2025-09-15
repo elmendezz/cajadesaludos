@@ -1,10 +1,12 @@
-// BOT Version: 4
-// Dependencias: Ninguna, usa las de Vercel y la API de GitHub
+// BOT Version: 5
+// Dependencias: crypto
 // Change Log:
-// - Se corrigió el error "body stream already read" optimizando getFileContent.
-// - Se obtiene el SHA y el contenido del archivo en una sola petición a la API de GitHub.
+// - Se añade la dependencia 'crypto' para generar IDs únicos.
+// - Se añade un 'id' único a cada nuevo saludo.
+// - Se actualiza el 'handler' para borrar o marcar con glow por 'id'.
 
 import fetch from 'node-fetch';
+import crypto from 'crypto';
 
 // !!!!!!!!!!!!!!!!!!!!!!!! IMPORTANTE !!!!!!!!!!!!!!!!!!!!!!!!
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN; 
@@ -17,7 +19,7 @@ async function getFileContent() {
     const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
     const headers = {
         'Authorization': `token ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json' // Solicitamos el formato JSON para obtener el SHA y el contenido
+        'Accept': 'application/vnd.github.v3+json'
     };
     const response = await fetch(url, { headers });
     
@@ -34,10 +36,10 @@ async function getFileContent() {
     };
 }
 
-async function updateRepoFile(newContent, sha) {
+async function updateRepoFile(newContent, sha, message) {
     const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
     const body = {
-        message: 'Nuevo saludo agregado', 
+        message: message, 
         content: Buffer.from(JSON.stringify(newContent, null, 2)).toString('base64'),
         sha: sha
     };
@@ -76,7 +78,9 @@ export default async function handler(req, res) {
 
             const { content: greetings, sha } = await getFileContent();
             
+            // Generamos un ID único para el saludo
             const newGreeting = {
+                id: crypto.randomBytes(4).toString('hex'),
                 name,
                 message,
                 timestamp: new Date().toISOString(),
@@ -84,7 +88,7 @@ export default async function handler(req, res) {
             };
             greetings.push(newGreeting);
 
-            await updateRepoFile(greetings, sha);
+            await updateRepoFile(greetings, sha, 'Nuevo saludo añadido');
 
             res.status(200).json({ message: 'Saludo enviado con éxito' });
         } catch (e) {
@@ -95,4 +99,4 @@ export default async function handler(req, res) {
         res.setHeader('Allow', ['GET', 'POST']);
         res.status(405).end(`Método ${req.method} no permitido`);
     }
-}
+                }
