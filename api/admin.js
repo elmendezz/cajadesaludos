@@ -1,10 +1,9 @@
-// BOT Version: 1
+// BOT Version: 3
 // Dependencias: Ninguna, usa las de Vercel y la API de GitHub
 // Change Log:
-// - Se crea un nuevo endpoint para manejar las acciones de administrador.
-// - Se añade la funcionalidad de borrar todos los saludos.
-// - Se añade la funcionalidad de marcar un saludo como "glowing".
-// - Se usa el mismo helper `getFileContent` y `updateRepoFile` para la lógica.
+// - Se actualiza el endpoint para usar 'id' en lugar de 'index'.
+// - Se implementa la lógica para borrar un saludo por su 'id' específico.
+// - Se busca el saludo por 'id' para la acción 'glow'.
 
 import fetch from 'node-fetch';
 
@@ -15,7 +14,6 @@ const GITHUB_REPO = process.env.GITHUB_REPO;
 const GITHUB_FILE_PATH = 'greetings.json';
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-// Helpers para interactuar con GitHub (copia de greetings.js para que sea un módulo autocontenido)
 async function getFileContent() {
     const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
     const headers = {
@@ -68,20 +66,29 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { action, index, customMessage } = req.body; // Añadimos 'index' y 'customMessage'
+        const { action, id, customMessage } = req.body;
         const { content: greetings, sha } = await getFileContent();
 
         if (action === 'borrar') {
-            await updateRepoFile([], sha, 'Todos los saludos han sido borrados por el admin.');
-            return res.status(200).json({ message: 'Todos los saludos han sido borrados.' });
-        } else if (action === 'glow') {
-            if (typeof index !== 'number' || index < 0 || index >= greetings.length) {
-                return res.status(400).json({ error: 'Índice de saludo no válido.' });
+            if (!id) {
+                return res.status(400).json({ error: 'ID del mensaje es requerido para borrar.' });
+            }
+            const newGreetings = greetings.filter(g => g.id !== id);
+            
+            if (newGreetings.length === greetings.length) {
+                return res.status(404).json({ error: 'No se encontró un saludo con ese ID.' });
             }
             
-            // Si el mensaje custom viene, lo actualizamos. Si no, solo cambiamos el glow.
-            const newGreetings = greetings.map((g, i) => {
-                if (i === index) {
+            await updateRepoFile(newGreetings, sha, `Saludo con ID ${id} ha sido borrado por el admin.`);
+            return res.status(200).json({ message: `Saludo con ID ${id} ha sido borrado.` });
+            
+        } else if (action === 'glow') {
+            if (!id) {
+                return res.status(400).json({ error: 'ID del mensaje es requerido para marcar con glow.' });
+            }
+            
+            const newGreetings = greetings.map(g => {
+                if (g.id === id) {
                     return {
                         ...g,
                         isGlowing: !g.isGlowing,
@@ -91,8 +98,13 @@ export default async function handler(req, res) {
                 return g;
             });
             
-            await updateRepoFile(newGreetings, sha, `Saludo en el índice ${index} actualizado.`);
-            return res.status(200).json({ message: `Estado "glow" del saludo en el índice ${index} ha sido actualizado.` });
+            const targetGreeting = newGreetings.find(g => g.id === id);
+            if (!targetGreeting) {
+                return res.status(404).json({ error: 'No se encontró un saludo con ese ID.' });
+            }
+
+            await updateRepoFile(newGreetings, sha, `Estado "glow" del saludo con ID ${id} ha sido actualizado.`);
+            return res.status(200).json({ message: `Estado "glow" del saludo con ID ${id} ha sido actualizado.` });
         } else {
             return res.status(400).json({ error: 'Acción de administrador no válida.' });
         }
@@ -100,4 +112,4 @@ export default async function handler(req, res) {
         console.error(e);
         res.status(500).json({ error: e.message || 'No se pudo ejecutar la acción de admin. Revisa la consola.' });
     }
-      }
+}
