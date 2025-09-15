@@ -11,7 +11,7 @@ import fetch from 'node-fetch';
 // Ten en cuenta que debes cambiar 'elmendezz' y 'saludos-repo' por los tuyos.
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // ¡Tu token seguro!
 const GITHUB_OWNER = 'elmendezz'; // Tu nombre de usuario de GitHub
-const GITHUB_REPO = 'saludos-repo'; // El nombre de tu repositorio
+const GITHUB_REPO = 'saludos_repo'; // El nombre de tu repositorio
 const GITHUB_FILE_PATH = 'greetings.json'; // La ruta del archivo dentro del repo
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
