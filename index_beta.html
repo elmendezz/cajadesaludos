@@ -166,6 +166,13 @@
             text-align: right;
             margin-top: 10px;
         }
+        
+        .signature {
+            font-size: 0.6em;
+            color: #666;
+            text-align: right;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -187,16 +194,16 @@
         <section class="greetings-section">
             <h2>Saludos de la comunidad</h2>
             <div id="greetingsContainer">
-                </div>
+            </div>
         </section>
     </div>
 
     <script>
-        // BOT Version: 3
+        // BOT Version: 2
         // Change Log:
-        // - Se corrigió el error "body stream already read" al simplificar la lógica de manejo de errores en `apiRequest`.
-        // - Se asegura que la respuesta de la red se lea solo una vez.
-        // - Se agregó un manejo de error para cuando la respuesta de la API no es JSON.
+        // - Se actualiza el código para usar el nuevo endpoint de administrador.
+        // - Se añade la funcionalidad de pasar un índice y un mensaje custom para la acción "glow".
+        // - Se agrega un texto de firma al final de cada saludo.
         
         const nameInput = document.getElementById('nameInput');
         const messageInput = document.getElementById('messageInput');
@@ -205,7 +212,6 @@
         const greetingsContainer = document.getElementById('greetingsContainer');
         const ADMIN_PIN = '26435';
 
-        // Función para manejar todas las solicitudes a la API
         async function apiRequest(endpoint, method, data = null) {
             const options = {
                 method,
@@ -221,19 +227,14 @@
             try {
                 const response = await fetch(endpoint, options);
                 
-                // Si la respuesta no es exitosa, intentamos leerla como texto para los detalles
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Error: ${response.statusText}. Detalles: ${errorText}`);
+                    const errorData = await response.text();
+                    throw new Error(errorData || `Error del servidor: ${response.status} ${response.statusText}`);
                 }
 
-                // Si la respuesta es exitosa, la leemos como JSON
                 return await response.json();
-
             } catch (e) {
-                // Aquí se capturan errores de red o errores de parsing de JSON
-                console.error(`Ocurrió un error en la solicitud a ${endpoint}:`, e);
-                // Relanzamos el error para que sea manejado por la función que llamó a apiRequest
+                console.error(`Error en la solicitud a ${endpoint}:`, e);
                 throw e;
             }
         }
@@ -259,9 +260,10 @@
             }
         }
         
-        async function runAdminAction(action) {
+        // La URL de la API de admin ahora es /api/admin
+        async function runAdminAction(action, index = null, customMessage = null) {
             try {
-                await apiRequest('/api/admin', 'POST', { action });
+                await apiRequest('/api/admin', 'POST', { action, index, customMessage });
                 alert(`Acción "${action}" ejecutada con éxito.`);
                 fetchGreetings();
             } catch (e) {
@@ -272,17 +274,20 @@
         function renderGreetings(greetings) {
             greetingsContainer.innerHTML = '';
             const sortedGreetings = greetings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            sortedGreetings.forEach(greeting => {
+            sortedGreetings.forEach((greeting, index) => { // Añadimos el índice
                 const greetingCard = document.createElement('div');
                 greetingCard.classList.add('greeting-card');
                 if (greeting.isGlowing) {
                     greetingCard.classList.add('glowing');
                 }
                 const timestamp = new Date(greeting.timestamp).toLocaleString();
+                
+                // Aquí se añade el mensaje "creado por @elmendez_2.0"
                 greetingCard.innerHTML = `
                     <p class="author">${greeting.name}</p>
                     <p>${greeting.message}</p>
                     <p class="timestamp">${timestamp}</p>
+                    <p class="signature">creado por @elmendez_2.0</p>
                 `;
                 greetingsContainer.appendChild(greetingCard);
             });
@@ -308,7 +313,12 @@
                         await runAdminAction('borrar');
                     }
                 } else if (action && action.toLowerCase() === 'glow') {
-                    await runAdminAction('glow');
+                    const index = prompt('Ingresa el índice del saludo a marcar (el más reciente es el 0):');
+                    const customMessage = prompt('Ingresa el nuevo mensaje (opcional):');
+                    
+                    if (index !== null) {
+                        await runAdminAction('glow', parseInt(index), customMessage);
+                    }
                 } else if (action !== null) {
                     alert('Acción no reconocida. (Solo se acepta "borrar" o "glow")');
                 }
