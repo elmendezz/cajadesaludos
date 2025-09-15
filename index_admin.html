@@ -197,6 +197,12 @@
         .admin-controls .edit-btn:hover {
             background-color: #2a4ac8;
         }
+        .admin-controls .toggle-glow-btn {
+            background-color: #f0c53e;
+        }
+        .admin-controls .toggle-glow-btn:hover {
+            background-color: #c8a32a;
+        }
     </style>
 </head>
 <body>
@@ -221,13 +227,10 @@
     </div>
 
     <script>
-        // BOT Version: 5
+        // BOT Version: 6
         // Change Log:
-        // - Se crea una nueva interfaz de administración (`index_admin.html`) protegida por PIN.
-        // - El nombre del admin (@elmendez_2.0) está predefinido en el formulario.
-        // - Se añaden botones de "Borrar" y "Editar" directamente a cada mensaje.
-        // - Se ajusta la lógica para que los botones de "glow" y "borrar" solo salgan en mensajes ajenos.
-        // - Se añade la firma "creado por @elmendez_2.0" a los mensajes del admin.
+        // - Se añade un botón "Toggle Glow" para activar/desactivar el efecto.
+        // - Se actualiza la lógica para que el admin pueda enviar mensajes con glow automático.
         
         const ADMIN_PIN = '26435';
         const CONTAINER = document.querySelector('.container');
@@ -236,7 +239,6 @@
         const SUBMIT_BTN = document.getElementById('submitBtn');
         const GREETINGS_CONTAINER = document.getElementById('greetingsContainer');
 
-        // Función de autenticación al cargar la página
         window.onload = function() {
             const pin = prompt('Ingresa el PIN de administrador para acceder:');
             if (pin === ADMIN_PIN) {
@@ -244,7 +246,7 @@
                 fetchGreetings();
             } else {
                 alert('PIN incorrecto. Acceso denegado.');
-                window.close(); // Cierra la ventana si el PIN es incorrecto
+                window.close();
             }
         };
 
@@ -287,6 +289,7 @@
 
         async function addGreeting(name, message) {
             try {
+                // El backend ahora maneja el glow automático
                 await apiRequest('/api/greetings', 'POST', { name, message });
                 
                 MESSAGE_INPUT.value = '';
@@ -296,10 +299,9 @@
             }
         }
         
-        // La URL de la API de admin ahora es /api/admin
-        async function runAdminAction(action, id = null, customMessage = null) {
+        async function runAdminAction(action, id = null, data = {}) {
             try {
-                await apiRequest('/api/admin', 'POST', { action, id, customMessage });
+                await apiRequest('/api/admin', 'POST', { action, id, ...data });
                 fetchGreetings();
             } catch (e) {
                 // El alert ya está en apiRequest, no es necesario repetirlo
@@ -325,6 +327,15 @@
                     adminControls = `
                         <div class="admin-controls">
                             <button class="edit-btn" data-id="${greeting.id}">Editar</button>
+                            <button class="toggle-glow-btn" data-id="${greeting.id}">Toggle Glow</button>
+                            <button class="delete-btn" data-id="${greeting.id}">Borrar</button>
+                        </div>
+                    `;
+                } else {
+                    // Si es tu mensaje, solo le pones un toggle de glow y borrado
+                    adminControls = `
+                        <div class="admin-controls">
+                            <button class="toggle-glow-btn" data-id="${greeting.id}">Toggle Glow</button>
                             <button class="delete-btn" data-id="${greeting.id}">Borrar</button>
                         </div>
                     `;
@@ -361,8 +372,15 @@
                     const id = e.target.dataset.id;
                     const newMessage = prompt('Ingresa el nuevo mensaje:');
                     if (newMessage) {
-                        runAdminAction('editar', id, newMessage);
+                        runAdminAction('editar', id, { customMessage: newMessage });
                     }
+                });
+            });
+
+            document.querySelectorAll('.toggle-glow-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = e.target.dataset.id;
+                    runAdminAction('toggleGlow', id);
                 });
             });
         }
@@ -377,4 +395,4 @@
         });
     </script>
 </body>
-  </html>
+</html>
