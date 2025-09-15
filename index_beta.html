@@ -192,10 +192,11 @@
     </div>
 
     <script>
-        // BOT Version: 2
+        // BOT Version: 3
         // Change Log:
-        // - Se corrigió el error "body stream already read" al simplificar la lógica de manejo de errores.
+        // - Se corrigió el error "body stream already read" al simplificar la lógica de manejo de errores en `apiRequest`.
         // - Se asegura que la respuesta de la red se lea solo una vez.
+        // - Se agregó un manejo de error para cuando la respuesta de la API no es JSON.
         
         const nameInput = document.getElementById('nameInput');
         const messageInput = document.getElementById('messageInput');
@@ -204,7 +205,7 @@
         const greetingsContainer = document.getElementById('greetingsContainer');
         const ADMIN_PIN = '26435';
 
-        // Función para manejar solicitudes a la API con validación de la respuesta
+        // Función para manejar todas las solicitudes a la API
         async function apiRequest(endpoint, method, data = null) {
             const options = {
                 method,
@@ -217,14 +218,24 @@
                 options.body = JSON.stringify(data);
             }
 
-            const response = await fetch(endpoint, options);
+            try {
+                const response = await fetch(endpoint, options);
+                
+                // Si la respuesta no es exitosa, intentamos leerla como texto para los detalles
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error: ${response.statusText}. Detalles: ${errorText}`);
+                }
 
-            if (!response.ok) {
-                const errorData = await response.text();
-                throw new Error(`Error: ${response.statusText}. Detalles: ${errorData}`);
+                // Si la respuesta es exitosa, la leemos como JSON
+                return await response.json();
+
+            } catch (e) {
+                // Aquí se capturan errores de red o errores de parsing de JSON
+                console.error(`Ocurrió un error en la solicitud a ${endpoint}:`, e);
+                // Relanzamos el error para que sea manejado por la función que llamó a apiRequest
+                throw e;
             }
-
-            return await response.json();
         }
 
         async function fetchGreetings() {
@@ -233,7 +244,6 @@
                 renderGreetings(greetings);
             } catch (e) {
                 alert("Ocurrió un error al cargar los saludos. Revisa la consola para más detalles.");
-                console.error(e);
             }
         }
 
@@ -246,7 +256,6 @@
                 fetchGreetings();
             } catch (e) {
                 alert(`Ocurrió un error al enviar el saludo: ${e.message}`);
-                console.error(e);
             }
         }
         
@@ -257,7 +266,6 @@
                 fetchGreetings();
             } catch (e) {
                 alert(`Ocurrió un error al ejecutar la acción de admin: ${e.message}`);
-                console.error(e);
             }
         }
 
@@ -312,4 +320,4 @@
         window.onload = fetchGreetings;
     </script>
 </body>
-</html>
+    </html>
