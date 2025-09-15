@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cajita De Saludos - elmendezz</title>
-<style>
+    <style>
         :root {
             --bg-color-dark: #1a1a1a;
             --container-bg-dark: #222;
@@ -21,370 +21,804 @@
             --like-color: #f03e3e;
             --like-icon-color: #e0e0e0;
         }
-body.light-mode {
+
+        /* Tema Claro */
+        body.light-mode {
             --bg-color-dark: #f0f2f5;
             --container-bg-dark: #fff;
-            --card-bg-dark: #e9ebee;
-            --text-color-dark: #1c1e21;
+            --card-bg-dark: #f9f9f9;
+            --text-color-dark: #333;
             --border-color-dark: #ddd;
-            --form-bg-dark: #f6f8fa;
-            --glow-color: rgba(62, 102, 240, 0.3);
+            --form-bg-dark: #eee;
+            --glow-color: rgba(62, 102, 240, 0.2);
             --shadow-color: rgba(0, 0, 0, 0.1);
-            --signature-color: #aaa;
-            --like-icon-color: #1c1e21;
+            --pulse-glow-start: rgba(62, 102, 240, 0.2);
+            --pulse-glow-end: rgba(62, 102, 240, 0.5);
+            --signature-color: #bbb;
+            --like-color: #f03e3e;
+            --like-icon-color: #777;
         }
-body {
+
+        body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg-color-dark);
             color: var(--text-color-dark);
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
-            background-image: radial-gradient(circle, var(--glow-color) 1px, transparent 1px);
+            background-image: radial-gradient(circle, rgba(62, 102, 240, 0.1) 1px, transparent 1px);
             background-size: 20px 20px;
-            transition: background-color 0.5s ease;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--accent-color);
+            box-shadow: 0 0 10px var(--glow-color);
+            margin-bottom: 20px;
+            animation: pulse-glow 2s infinite ease-in-out;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: scale(1.05);
         }
 
-        .container {
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 10px var(--pulse-glow-start); }
+            50% { box-shadow: 0 0 20px var(--pulse-glow-end); }
+            100% { box-shadow: 0 0 10px var(--pulse-glow-start); }
+        }
+.container {
             width: 100%;
-            max-width: 600px;
+            max-width: 700px;
             background-color: var(--container-bg-dark);
             border-radius: 20px;
             padding: 30px;
             box-shadow: 0 4px 60px var(--shadow-color);
             border: 1px solid var(--border-color-dark);
             animation: fadeIn 1s ease-in-out;
-            transition: background-color 0.5s ease, border-color 0.5s ease;
-        }
-.form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 30px;
+            position: relative;
         }
 
-        .form input,
-        .form textarea {
-            padding: 12px 15px;
-            border-radius: 10px;
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        h1 {
+            color: var(--accent-color);
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px var(--glow-color);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .menu-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-color-dark);
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1001;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .menu-open .menu-toggle-btn {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .menu {
+            position: fixed;
+            top: 0;
+            left: -300px; /* Oculto por defecto */
+            height: 100%;
+            width: 250px;
+            background-color: var(--container-bg-dark);
+            border-right: 1px solid var(--border-color-dark);
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+            transition: left 0.3s ease-in-out;
+            z-index: 1000;
+        }
+
+        .menu.open {
+            left: 0;
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .menu-overlay.open {
+            display: block;
+        }
+
+        .menu-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu-item {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color-dark);
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item a {
+            color: var(--text-color-dark);
+            text-decoration: none;
+            display: block;
+        }
+.search-container {
+            flex-grow: 1;
+            margin: 0 20px;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 50px;
             border: 1px solid var(--border-color-dark);
             background-color: var(--form-bg-dark);
             color: var(--text-color-dark);
-            transition: all 0.3s ease;
-            resize: none;
-            font-size: 16px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
-        .form input:focus,
-        .form textarea:focus {
-            outline: none;
+        #searchInput:focus {
             border-color: var(--accent-color);
             box-shadow: 0 0 0 3px var(--glow-color);
         }
-        
-        .submit-btn {
-            background-color: var(--accent-color);
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: 10px;
+
+        #themeToggleBtn {
+            background: none;
             border: none;
+            color: var(--text-color-dark);
+            font-size: 20px;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.1s ease;
+            transition: color 0.3s;
         }
 
-        .submit-btn:hover {
-            background-color: #3152c1;
+        #themeToggleBtn:hover {
+            color: var(--accent-color);
         }
 
-        .submit-btn:active {
-            transform: scale(0.98);
-        }
-.greetings-list {
-            display: flex;
-            flex-direction: column;
+        .greetings-list {
+            display: grid;
             gap: 20px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
 
         .greeting-card {
             background-color: var(--card-bg-dark);
             padding: 20px;
             border-radius: 15px;
-            box-shadow: 0 4px 20px var(--shadow-color);
-            transition: transform 0.2s ease, background-color 0.5s ease, box-shadow 0.5s ease;
+            border: 1px solid var(--border-color-dark);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             position: relative;
             overflow: hidden;
-            border: 1px solid var(--border-color-dark);
-        }
-
-        .greeting-card.glowing {
-            animation: pulse-glow 2s infinite alternate ease-in-out;
-            box-shadow: 0 0 20px var(--pulse-glow-start);
-            border-color: var(--pulse-glow-start);
-        }
-
-        @keyframes pulse-glow {
-            from { box-shadow: 0 0 10px var(--pulse-glow-start); border-color: var(--pulse-glow-start); }
-            to { box-shadow: 0 0 20px var(--pulse-glow-end); border-color: var(--pulse-glow-end); }
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .greeting-card:hover {
             transform: translateY(-5px);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .card-header h3 {
-            margin: 0;
-            font-size: 1.2rem;
-            color: var(--accent-color);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
         }
         
-        .card-header .signature {
-            font-size: 0.8rem;
-            color: var(--signature-color);
+        .greeting-card.glowing::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background: linear-gradient(45deg, var(--glow-color), transparent, var(--glow-color));
+            background-size: 400% 400%;
+            z-index: -1;
+            filter: blur(8px);
+            animation: glowing-border 2s linear infinite;
         }
 
-        .card-content {
-            font-size: 1rem;
+        @keyframes glowing-border {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .greeting-card.glowing {
+            border: 1px solid var(--accent-color);
+            box-shadow: 0 0 20px var(--glow-color), 0 0 40px var(--glow-color);
+        }
+
+        .greeting-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .greeting-message {
+            margin: 0 0 10px;
+            font-size: 1.1em;
             line-height: 1.6;
         }
-        
-        .card-actions {
+
+        .greeting-signature {
+            font-style: italic;
+            text-align: right;
+            color: var(--signature-color);
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+
+        .actions {
             display: flex;
             justify-content: flex-end;
             align-items: center;
-            margin-top: 15px;
+            gap: 10px;
+            margin-top: 10px;
         }
-        
-        .like-btn {
-            background-color: transparent;
+
+        .like-btn, .info-btn {
+            background: none;
             border: none;
-            color: var(--like-icon-color);
             cursor: pointer;
-            font-size: 1.2rem;
+            color: var(--like-icon-color);
+            transition: transform 0.2s, color 0.2s;
             display: flex;
             align-items: center;
             gap: 5px;
-            transition: color 0.2s ease;
+            padding: 5px;
         }
-        
+
+        .like-btn.liked {
+            color: var(--like-color);
+        }
+
         .like-btn:hover {
-            color: var(--like-color);
+            transform: scale(1.1);
+        }
+
+        .info-btn {
+            background-color: var(--form-bg-dark);
+            border-radius: 5px;
+            font-size: 0.8em;
+            padding: 5px 10px;
+            color: var(--text-color-dark);
+            border: 1px solid var(--border-color-dark);
+            transition: background-color 0.2s;
+        }
+
+        .info-btn:hover {
+            background-color: #555;
+        }
+
+        .like-btn span {
+            font-size: 0.9em;
         }
         
-        .like-btn .icon.liked {
-            color: var(--like-color);
+        .like-icon {
+            font-size: 1.5em;
+        }
+
+        .form-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: var(--form-bg-dark);
+            border-radius: 15px;
+            border: 1px solid var(--border-color-dark);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color-dark);
+            background-color: var(--card-bg-dark);
+            color: var(--text-color-dark);
+            box-sizing: border-box;
+            font-size: 1em;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--glow-color);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--accent-color);
+            color: #fff;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .submit-btn:hover {
+            background-color: #3152c7;
+            transform: translateY(-2px);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.8em;
+            color: var(--signature-color);
+        }
+
+        /* Estilos del Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1002;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
         }
         
-        .like-btn .icon {
-            transition: transform 0.2s ease;
+        .modal-content {
+            background-color: var(--card-bg-dark);
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color-dark);
+            width: 80%;
+            max-width: 400px;
+            position: relative;
+            animation: modalOpen 0.3s ease-out;
+        }
+
+        @keyframes modalOpen {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .close-btn {
+            color: var(--text-color-dark);
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-info {
+            padding-top: 20px;
+        }
+
+        .section-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: 1px solid var(--border-color-dark);
+            border-radius: 20px;
+            background-color: var(--form-bg-dark);
+            color: var(--text-color-dark);
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .tab-btn:hover {
+            background-color: #444;
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px var(--glow-color);
+        }
+
+        /* ESTILOS DEL DISCLAIMER */
+        #disclaimer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        #disclaimer-box {
+            background-color: var(--container-bg-dark);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color-dark);
+            box-shadow: 0 4px 60px var(--shadow-color);
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        #disclaimer-box h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+        }
+
+        #disclaimer-box p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        #disclaimer-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .disclaimer-btn {
+            padding: 15px 30px;
+            border: 1px solid var(--border-color-dark);
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .disclaimer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        #accept-dark {
+            background-color: var(--card-bg-dark);
+            color: var(--text-color-dark);
         }
         
-        .like-btn:active .icon {
-            transform: scale(1.2);
+        #accept-light {
+            background-color: #f9f9f9;
+            color: #333;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+
     </style>
 </head>
 <body>
-    <div class="container">
-<div class="form">
-            <input type="text" id="name-input" placeholder="Tu nombre (opcional)">
-            <textarea id="message-input" placeholder="Escribe tu saludo..." rows="3"></textarea>
-            <button class="submit-btn" id="submit-btn">Enviar Saludo</button>
-        </div>
-<div class="search-container">
-            <input type="text" id="search-input" placeholder="Buscar saludos...">
-        </div>
-        <div class="tabs-container">
-            <button class="tab-btn active" data-filter="all">Todos</button>
-            <button class="tab-btn" data-filter="recent">Recientes</button>
-            <button class="tab-btn" data-filter="popular">Populares</button>
-        </div>
-        <div class="greetings-list" id="greetings-list">
-            </div><div id="info-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" id="close-modal-btn">&times;</span>
-            <h2>Acerca de esta app</h2>
-            <p>Esta es una app de prueba para demostrar el funcionamiento de una API simple con Vercel y GitHub.</p>
-            <p>Hecha con amor por <a href="https://Instagram.com/elmendez_2.0" target="_blank">@elmendez_2.0</a></p>
+
+    <div id="disclaimer-overlay">
+        <div id="disclaimer-box">
+            <h2>¡Oye tú!</h2>
+            <p>Al presionar en el botón "Aceptar" estás aceptando que aquí en este sitio puede haber funas, groserías o otras cosas así.</p>
+            <div id="disclaimer-buttons">
+                <button class="disclaimer-btn" id="accept-dark">Aceptar (Modo Oscuro)</button>
+                <button class="disclaimer-btn" id="accept-light">Aceptar (Modo Claro)</button>
+            </div>
         </div>
     </div>
-    
-    <div id="admin-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" id="close-admin-modal-btn">&times;</span>
-            <h2>Panel de Admin</h2>
-            <input type="password" id="admin-pin-input" placeholder="Ingresa el PIN de Admin">
-            <button id="admin-login-btn">Acceder</button>
+
+    <div class="menu">
+        <ul class="menu-list">
+            <li class="menu-item">
+                <button id="themeToggleBtn">Cambiar Tema</button>
+            </li>
+            <li class="menu-item">
+                <a href="#">Inicio</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="menu-overlay"></div>
+
+    <div class="container">
+        <header>
+            <div class="controls">
+                <button class="menu-toggle-btn">☰</button>
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Buscar ...">
+                </div>
+            </div>
+            <img src="logo.jpg" alt="Logo" class="logo">
+            <h1>Cajita De Saludos</h1>
+            <p>Deja tu saludo o un mensaje, ya sea chisme o algo, igual yo me conecto casi siempre 👅.</p>
+        </header>
+
+        <div class="form-container">
+            <form id="greetingForm">
+                <div class="form-group">
+                    <label for="nameInput">Tu Nombre *No Obligatorio* :</label>
+                    <input type="text" id="nameInput" placeholder="Escribe tu nombre o alias">
+                </div>
+                <div class="form-group">
+                    <label for="messageInput">Tu Mensaje *Requerido* :</label>
+                    <textarea id="messageInput" rows="4" required placeholder="Escribe tu mensaje aquí"></textarea>
+                </div>
+                <button type="submit" class="submit-btn" id="submitBtn">Enviar Mensaje 📨</button>
+            </form>
         </div>
+
+        <div class="section-tabs">
+            <button class="tab-btn active" data-filter="new">Mensajes Nuevos</button>
+            <button class="tab-btn" data-filter="old">Mensajes Viejos</button>
+        </div>
+
+        <section id="greetingsSection">
+            <ul class="greetings-list" id="greetingsList">
+                </ul>
+        </section>
+<div id="modalInfo" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">×</span>
+                <div class="modal-info">
+                    <p><strong>ID:</strong> <span id="modalId"></span></p>
+                    <p><strong>Nombre:</strong> <span id="modalName"></span></p>
+                    <p><strong>Mensaje:</strong> <span id="modalMessage"></span></p>
+                    <p><strong>Fecha:</strong> <span id="modalDate"></span></p>
+                    <p><strong>Likes:</strong> <span id="modalLikes"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Hecho por @elmendez_2.0 | <a href="index_admin.html">Admin Panel</a></p>
+        </footer>
     </div>
 <script>
-        // BOT Version: 1
+        // BOT Version: 13
+        // Dependencias: Ninguna.
         // Change Log:
-        // - Se corrige el error de la respuesta anterior.
-        // - Se entrega el `index.html` original en 12 partes.
+        // - Se agrega un cartel de disclaimer al cargar la página.
+        // - El cartel tiene dos botones para aceptar y elegir el tema (claro/oscuro).
+        // - La elección se guarda en localStorage y el cartel no vuelve a aparecer.
 
-        // Variables de la API, reemplaza con tus datos
-        const GITHUB_TOKEN = 'TU_GITHUB_TOKEN'; 
-        const GITHUB_OWNER = 'TU_USUARIO';
-        const GITHUB_REPO = 'TU_REPO';
-        const API_URL = `https://${GITHUB_REPO}-${GITHUB_OWNER}.vercel.app/api`;
-        
-        // Variables del DOM
-        const SUBMIT_BTN = document.getElementById('submit-btn');
-        const NAME_INPUT = document.getElementById('name-input');
-        const MESSAGE_INPUT = document.getElementById('message-input');
-        const GREETINGS_LIST = document.getElementById('greetings-list');
-        const INFO_BTN = document.getElementById('info-btn');
-        const INFO_MODAL = document.getElementById('info-modal');
-        const CLOSE_MODAL_BTN = document.getElementById('close-modal-btn');
-        const THEME_TOGGLE_BTN = document.getElementById('theme-toggle-btn');
-        const SEARCH_INPUT = document.getElementById('search-input');
+        const API_URL = '/api/greetings.js';
+        const LIKE_API_URL = '/api/like.js';
+        const GREETINGS_LIST = document.getElementById('greetingsList');
+        const NAME_INPUT = document.getElementById('nameInput');
+        const MESSAGE_INPUT = document.getElementById('messageInput');
+        const FORM = document.getElementById('greetingForm');
+        const THEME_TOGGLE_BTN = document.getElementById('themeToggleBtn');
+        const SEARCH_INPUT = document.getElementById('searchInput');
+        const MENU_TOGGLE_BTN = document.querySelector('.menu-toggle-btn');
+        const MENU = document.querySelector('.menu');
+        const MENU_OVERLAY = document.querySelector('.menu-overlay');
+        const INFO_MODAL = document.getElementById('modalInfo');
+        const CLOSE_MODAL_BTN = document.querySelector('.modal .close-btn');
         const TAB_BUTTONS = document.querySelectorAll('.tab-btn');
 
-        let allGreetings = []; // Almacena todos los saludos
+        // Nuevas constantes para el disclaimer
+        const DISCLAIMER_OVERLAY = document.getElementById('disclaimer-overlay');
+        const ACCEPT_DARK_BTN = document.getElementById('accept-dark');
+        const ACCEPT_LIGHT_BTN = document.getElementById('accept-light');
 
-        // Función para renderizar los saludos
-        function renderGreetings(greetings) {
-            GREETINGS_LIST.innerHTML = '';
-            greetings.forEach(greeting => {
-                const card = document.createElement('div');
-                card.classList.add('greeting-card');
-                if (greeting.isGlowing) {
-                    card.classList.add('glowing');
+        let allGreetings = [];
+        let likedGreetings = JSON.parse(localStorage.getItem('likedGreetings')) || {};
+
+        async function fetchGreetings() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error('No se pudieron obtener los saludos.');
                 }
-                card.dataset.id = greeting.id;
-
-                card.innerHTML = `
-                    <div class="card-header">
-                        <h3>${greeting.name || 'Anónimo'}</h3>
-                        <span class="signature">${new Date(greeting.timestamp).toLocaleDateString()}</span>
-                    </div>
-                    <div class="card-content">
-                        <p>${greeting.message}</p>
-                    </div>
-                    <div class="card-actions">
-                        <button class="like-btn" data-id="${greeting.id}">
-                            <i class="fas fa-heart icon ${localStorage.getItem(greeting.id) ? 'liked' : ''}"></i>
-                            <span>${greeting.likes || 0}</span>
-                        </button>
-                    </div>
-                `;
-                GREETINGS_LIST.appendChild(card);
-            });
-            // Añadir eventos a los botones de "Me gusta"
-            document.querySelectorAll('.like-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const id = e.currentTarget.dataset.id;
-                    const liked = localStorage.getItem(id) === 'true';
-                    const action = liked ? 'unlike' : 'like';
-                    runLikeAction(id, action);
-                });
-            });
+                const rawGreetings = await response.json();
+                allGreetings = rawGreetings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                filterAndRenderGreetings();
+            } catch (e) {
+                console.error('Error:', e);
+                GREETINGS_LIST.innerHTML = `<li style="text-align: center; color: var(--like-color);">No se pudieron cargar los saludos.</li>`;
+            }
         }
         
-        // Función para filtrar y renderizar
         function filterAndRenderGreetings() {
             const activeTab = document.querySelector('.tab-btn.active').dataset.filter;
-            let filteredGreetings = [...allGreetings];
-            if (activeTab === 'recent') {
-                filteredGreetings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            } else if (activeTab === 'popular') {
-                filteredGreetings.sort((a, b) => b.likes - a.likes);
+            let filteredGreetings = allGreetings;
+
+            if (activeTab === 'new') {
+                filteredGreetings = allGreetings.filter(g => g.id);
+            } else if (activeTab === 'old') {
+                filteredGreetings = allGreetings.filter(g => !g.id);
             }
             renderGreetings(filteredGreetings);
         }
 
-        // Función para obtener los saludos desde la API
-        async function fetchGreetings() {
+        async function postGreeting(name, message) {
             try {
-                const response = await fetch(`${API_URL}/greetings`);
-                if (!response.ok) {
-                    throw new Error('Error al cargar los saludos');
-                }
-                allGreetings = await response.json();
-                filterAndRenderGreetings();
-            } catch (error) {
-                console.error('Error:', error);
-                alert('No se pudieron cargar los saludos. Revisa la consola para más detalles.');
-            }
-        }
-        
-        // Función para enviar un nuevo saludo
-        async function addGreeting(name, message) {
-            try {
-                const response = await fetch(`${API_URL}/greetings`, {
+                const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, message })
                 });
                 if (!response.ok) {
-                    throw new Error('Error al enviar el saludo');
+                    throw new Error('Error al enviar el saludo.');
                 }
-                const result = await response.json();
-                alert(result.message);
-                MESSAGE_INPUT.value = '';
-                fetchGreetings();
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Hubo un error al enviar el saludo. Intenta de nuevo.');
+                alert('Saludo enviado con éxito.');
+                await fetchGreetings(); // Actualizar la lista
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Hubo un error al enviar el saludo. Inténtalo de nuevo.');
             }
         }
         
-        // Función para dar o quitar un like
-        async function runLikeAction(id, action) {
+        async function toggleLike(id) {
+            const isLiked = likedGreetings[id];
+            const action = isLiked ? 'unlike' : 'like';
+
             try {
-                const response = await fetch(`${API_URL}/like`, {
+                const response = await fetch(LIKE_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id, action })
                 });
                 if (!response.ok) {
-                    throw new Error('Error al actualizar el like');
+                    throw new Error('Error al actualizar el like.');
                 }
-                
-                // Actualizar el estado del like en el localStorage
-                if (action === 'like') {
-                    localStorage.setItem(id, 'true');
+
+                if (isLiked) {
+                    delete likedGreetings[id];
                 } else {
-                    localStorage.removeItem(id);
+                    likedGreetings[id] = true;
                 }
-                fetchGreetings();
-                
-            } catch (error) {
-                console.error('Error:', error);
+                localStorage.setItem('likedGreetings', JSON.stringify(likedGreetings));
+                await fetchGreetings();
+            } catch (e) {
+                console.error('Error:', e);
                 alert('No se pudo actualizar el like.');
             }
         }
-        
-        // Event Listeners
-        SUBMIT_BTN.addEventListener('click', () => {
+
+        function renderGreetings(greetings) {
+            GREETINGS_LIST.innerHTML = '';
+            greetings.forEach(g => {
+                const li = document.createElement('li');
+                li.className = `greeting-card ${g.isGlowing ? 'glowing' : ''}`;
+                const date = new Date(g.timestamp).toLocaleString();
+                const isLiked = likedGreetings[g.id];
+                const likeClass = isLiked ? 'liked' : '';
+                
+                li.innerHTML = `
+                    <div class="greeting-content">
+                        <p class="greeting-message">${g.message}</p>
+                        <p class="greeting-signature">- ${g.name}</p>
+                        <div class="actions">
+                            <button class="like-btn ${likeClass}" data-id="${g.id}">
+                                <span class="like-icon">❤️</span>
+                                <span>${g.likes || 0}</span>
+                            </button>
+                            <button class="info-btn" data-id="${g.id}">Información</button>
+                        </div>
+                    </div>
+                `;
+                GREETINGS_LIST.appendChild(li);
+            });
+
+            // Añadir eventos a los nuevos botones
+            document.querySelectorAll('.like-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    toggleLike(id);
+                });
+            });
+            
+            document.querySelectorAll('.info-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    const greeting = allGreetings.find(g => g.id === id);
+                    if (greeting) {
+                        showInfoModal(greeting);
+                    }
+                });
+            });
+        }
+function showInfoModal(greeting) {
+            document.getElementById('modalId').textContent = greeting.id;
+            document.getElementById('modalName').textContent = greeting.name;
+            document.getElementById('modalMessage').textContent = greeting.message;
+            document.getElementById('modalDate').textContent = new Date(greeting.timestamp).toLocaleString();
+            document.getElementById('modalLikes').textContent = greeting.likes;
+            INFO_MODAL.style.display = 'flex';
+        }
+
+        FORM.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = NAME_INPUT.value.trim() || 'Usuario Anónimo';
             const message = MESSAGE_INPUT.value.trim();
             if (message) {
-                addGreeting(NAME_INPUT.value, message);
+                await postGreeting(name, message);
+                NAME_INPUT.value = '';
+                MESSAGE_INPUT.value = '';
             } else {
                 alert('Por favor, escribe un mensaje.');
             }
         });
-        
-        INFO_BTN.addEventListener('click', () => {
-            INFO_MODAL.style.display = 'block';
+
+        THEME_TOGGLE_BTN.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            const isLightMode = document.body.classList.contains('light-mode');
+            localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
+        });
+
+        MENU_TOGGLE_BTN.addEventListener('click', () => {
+            MENU.classList.toggle('open');
+            MENU_OVERLAY.classList.toggle('open');
+            document.body.classList.toggle('menu-open');
+        });
+
+        MENU_OVERLAY.addEventListener('click', () => {
+            MENU.classList.remove('open');
+            MENU_OVERLAY.classList.remove('open');
+            document.body.classList.remove('menu-open');
         });
         
         CLOSE_MODAL_BTN.addEventListener('click', () => {
@@ -414,16 +848,47 @@ body {
             );
             renderGreetings(filteredGreetings);
         });
-
-        window.onload = () => {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-mode');
+        
+        // Lógica del disclaimer
+        function checkDisclaimer() {
+            const disclaimerAccepted = localStorage.getItem('disclaimerAccepted');
+            if (disclaimerAccepted) {
+                DISCLAIMER_OVERLAY.style.display = 'none';
+                // Si ya fue aceptado, aplicamos el tema guardado
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'light') {
+                    document.body.classList.add('light-mode');
+                }
+                fetchGreetings();
+                // Actualización automática cada 10 segundos
+                setInterval(fetchGreetings, 10000); 
+            } else {
+                DISCLAIMER_OVERLAY.style.display = 'flex';
+                // Ocultamos el resto del contenido hasta que el usuario acepte
+                document.body.style.overflow = 'hidden';
             }
+        }
+
+        ACCEPT_DARK_BTN.addEventListener('click', () => {
+            localStorage.setItem('disclaimerAccepted', 'true');
+            localStorage.setItem('theme', 'dark');
+            DISCLAIMER_OVERLAY.style.display = 'none';
+            document.body.style.overflow = '';
             fetchGreetings();
-            // Actualización automática cada 10 segundos
-            setInterval(fetchGreetings, 10000); 
-        };
+            setInterval(fetchGreetings, 10000);
+        });
+
+        ACCEPT_LIGHT_BTN.addEventListener('click', () => {
+            localStorage.setItem('disclaimerAccepted', 'true');
+            localStorage.setItem('theme', 'light');
+            document.body.classList.add('light-mode');
+            DISCLAIMER_OVERLAY.style.display = 'none';
+            document.body.style.overflow = '';
+            fetchGreetings();
+            setInterval(fetchGreetings, 10000);
+        });
+        
+        window.onload = checkDisclaimer;
     </script>
 </body>
 </html>
