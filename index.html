@@ -142,6 +142,18 @@
         }
 
         .menu-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--text-color-dark);
+    font-size: 26px;
+    cursor: pointer;
+    margin-left: 5px;   /* margen pequeño desde el borde */
+    margin-right: 10px; /* espacio con la barra */
+    display: flex;
+    align-items: center;
+    transition: opacity 0.3s ease-in-out;
+}
+        .menu-togglle-btn {
             background: none;
             border: none;
             color: var(--text-color-dark);
@@ -151,7 +163,6 @@
             left: 20px;
             top: 20px;
             z-index: 1001;
-            transition: opacity 0.3s ease-in-out;
         }
         
         .menu-open .menu-toggle-btn {
@@ -630,7 +641,6 @@
 </head>
 <body>
 
-    <div class="menu-toggle-btn">☰</div>
     <div class="menu" id="sidebar">
         <h3>Menú</h3>
         <button id="themeToggleBtn" class="menu-btn">Cambiar Tema</button>
@@ -640,6 +650,8 @@
         <div class="version-log">
             <h4>Historial de Cambios</h4>
             <div id="changelog-content">
+            	<p><b>v15.3</b> - Se ha añadido un nuevo código de acceso a la página de administración, está escondido en mis redes sociales, cualquiera que quiera acceso puede buscarlo 😛.</p>
+            	<p><b>v15.2</b> - Se ha corregido el error de renderizado del botón de menú (hamburger menu button) y ahora se va vinculado a la barra de búsqueda.</p>
                 <p><b>v15</b> - Se corrige el error de "página cortada" y se ajusta el CSS del menú.</p>
                 <p><b>v14</b> - Se añade el historial de cambios al menú de hamburguesa. Se ajusta el CSS para evitar la superposición del menú.</p>
                 <p><b>v13</b> - Se corrige el error al mover el botón de tema y se integra en el menú de hamburguesa. Se añade un nuevo botón en el menú para activar/desactivar la fuente de emojis "NotoColorEmoji".</p>
@@ -664,7 +676,9 @@
 
     <div class="container">
         <header>
-            <div class="controls">
+ <div class="controls">
+ 	    <div class="menu-toggle-btn">☰</div>
+ 
                 <div class="search-container">
                     <input type="text" id="searchInput" placeholder="Buscar ...">
                 </div>
