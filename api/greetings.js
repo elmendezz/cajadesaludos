@@ -1,8 +1,8 @@
-// BOT Version: 7
+// BOT Version: 8
 // Dependencias: crypto
 // Change Log:
-// - Se añade la lógica para que los mensajes del admin (@elmendez_2.0) se marquen con 'glow' automáticamente al crearlos.
-// - Se añade la propiedad 'likes' con valor de 0 a cada nuevo saludo.
+// - Se elimina la restricción de que el campo "nombre" sea obligatorio.
+// - Si el nombre está vacío, se asigna por defecto "Usuario Anónimo".
 
 import fetch from 'node-fetch';
 import crypto from 'crypto';
@@ -38,19 +38,20 @@ async function getFileContent() {
 async function updateRepoFile(newContent, sha, message) {
     const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
     const body = {
-        message: message, 
+        message: message,
         content: Buffer.from(JSON.stringify(newContent, null, 2)).toString('base64'),
         sha: sha
     };
     const headers = {
         'Authorization': `token ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github.v3+json',
         'Content-Type': 'application/json'
     };
-
+    
     const response = await fetch(url, {
-        method: 'PUT',
-        headers: headers,
-        body: JSON.stringify(body)
+      method: 'PUT',
+      headers: headers,
+      body: JSON.stringify(body)
     });
 
     if (!response.ok) {
@@ -70,9 +71,13 @@ export default async function handler(req, res) {
         }
     } else if (req.method === 'POST') {
         try {
-            const { name, message } = req.body;
-            if (!name || !message) {
-                return res.status(400).json({ error: 'Nombre y mensaje son requeridos.' });
+            let { name, message } = req.body;
+            if (!message) {
+                return res.status(400).json({ error: 'Mensaje es requerido.' });
+            }
+
+            if (!name || name.trim() === '') {
+                name = 'Usuario Anónimo';
             }
 
             const { content: greetings, sha } = await getFileContent();
@@ -84,7 +89,7 @@ export default async function handler(req, res) {
                 message,
                 timestamp: new Date().toISOString(),
                 isGlowing: isMyMessage,
-                likes: 0 // ¡Aquí está el cambio clave!
+                likes: 0
             };
             greetings.push(newGreeting);
 
@@ -99,4 +104,4 @@ export default async function handler(req, res) {
         res.setHeader('Allow', ['GET', 'POST']);
         res.status(405).end(`Método ${req.method} no permitido`);
     }
-                }
+        }
