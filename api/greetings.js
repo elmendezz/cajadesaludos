@@ -1,94 +1,108 @@
-// File: api/greetings.js
-// Vercel serverless function (handles GET and POST)
-// REQUIRES in Vercel Environment Variables:
-//   - GITHUB_TOKEN  (token with "gist" scope)
-//   - GIST_ID       (the gist id that contains greetings.json)
-//
-// CORS: permite llamadas desde tu GitHub Pages (origenes).
+// BOT Version:2
+// Dependencias: Ninguna, usa las de Vercel y la API de GitHub
+// Change Log:
+// - Se cambió la interacción de GitHub Gist a un repositorio de GitHub.
+// - La lógica ahora maneja la obtención, modificación y actualización del archivo.
+
+import fetch from 'node-fetch';
+
+// !!!!!!!!!!!!!!!!!!!!!!!! IMPORTANTE !!!!!!!!!!!!!!!!!!!!!!!!
+// 🚨 Estas son tus nuevas variables de entorno de Vercel
+// Ten en cuenta que debes cambiar 'elmendezz' y 'saludos-repo' por los tuyos.
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // ¡Tu token seguro!
+const GITHUB_OWNER = 'elmendezz'; // Tu nombre de usuario de GitHub
+const GITHUB_REPO = 'saludos-repo'; // El nombre de tu repositorio
+const GITHUB_FILE_PATH = 'greetings.json'; // La ruta del archivo dentro del repo
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+async function getFileSha() {
+    const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
+    const headers = {
+        'Authorization': `token ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github.v3.raw'
+    };
+    const response = await fetch(url, { headers });
+    if (!response.ok) {
+        throw new Error('Error al obtener el SHA del archivo.');
+    }
+    const data = await response.json();
+    return data.sha;
+}
+
+async function getGreetings() {
+    const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
+    const headers = {
+        'Authorization': `token ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github.v3.raw' // Para obtener el contenido del archivo directo
+    };
+    const response = await fetch(url, { headers });
+    if (!response.ok) {
+        throw new Error('Error al obtener los saludos.');
+    }
+    const content = await response.text();
+    return JSON.parse(content);
+}
+
+async function updateRepoFile(newContent, sha) {
+    const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
+    const body = {
+        message: 'Nuevo saludo agregado', // Mensaje del commit
+        content: Buffer.from(JSON.stringify(newContent, null, 2)).toString('base64'), // El contenido debe estar en base64
+        sha: sha
+    };
+    const headers = {
+        'Authorization': `token ${GITHUB_TOKEN}`,
+        'Content-Type': 'application/json'
+    };
+
+    const response = await fetch(url, {
+        method: 'PUT', // PUT para actualizar archivos
+        headers: headers,
+        body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error al actualizar el archivo del repositorio');
+    }
+}
+
 export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
-
-  const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-  const envGistId = process.env.GIST_ID;
-
-  try {
-    // Use gist id from query param if provided, otherwise from env
-    const gistId = req.query?.gist_id || envGistId;
-    if (!gistId) {
-      return res.status(400).json({ error: 'No GIST_ID configured (env GIST_ID or query param gist_id required)' });
-    }
-
     if (req.method === 'GET') {
-      // Leer el gist y devolver el contenido de greetings.json como JSON (array)
-      const gresp = await fetch(`https://api.github.com/gists/${gistId}`, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/vnd.github.v3+json'
+        try {
+            const greetings = await getGreetings();
+            res.status(200).json(greetings);
+        } catch (e) {
+            console.error(e);
+            res.status(500).json({ error: 'No se pudieron cargar los saludos. Revisa tus credenciales y el repositorio.' });
         }
-      });
-
-      if (!gresp.ok) {
-        const err = await gresp.json().catch(() => ({}));
-        return res.status(gresp.status).json({ error: 'Error fetching gist', details: err });
-      }
-
-      const data = await gresp.json();
-      const file = data.files && data.files['greetings.json'];
-      const content = file && typeof file.content === 'string' ? file.content : '[]';
-      let greetings;
-      try {
-        greetings = JSON.parse(content);
-      } catch (e) {
-        greetings = [];
-      }
-      return res.status(200).json(greetings);
-    }
-
-    if (req.method === 'POST') {
-      if (!GITHUB_TOKEN) {
-        return res.status(500).json({ error: 'GITHUB_TOKEN not set in environment' });
-      }
-
-      // Esperamos body: { greetings: [...] } (array completo)
-      const payload = req.body;
-      const newGreetings = payload?.greetings ?? payload;
-
-      if (!Array.isArray(newGreetings)) {
-        return res.status(400).json({ error: 'Bad request: body should be { "greetings": [ ... ] }' });
-      }
-
-      const patchResp = await fetch(`https://api.github.com/gists/${gistId}`, {
-        method: 'PATCH',
-        headers: {
-          Authorization: `token ${GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          files: {
-            'greetings.json': {
-              content: JSON.stringify(newGreetings, null, 2)
+    } else if (req.method === 'POST') {
+        try {
+            const { name, message } = req.body;
+            if (!name || !message) {
+                return res.status(400).json({ error: 'Nombre y mensaje son requeridos.' });
             }
-          }
-        })
-      });
 
-      const result = await patchResp.json().catch(() => ({}));
-      return res.status(patchResp.ok ? 200 : patchResp.status).json(result);
+            const greetings = await getGreetings();
+            const newGreeting = {
+                name,
+                message,
+                timestamp: new Date().toISOString(),
+                isGlowing: false
+            };
+            greetings.push(newGreeting);
+
+            // Obtener el SHA del archivo antes de actualizarlo
+            const sha = await getFileSha();
+            await updateRepoFile(greetings, sha);
+
+            res.status(200).json({ message: 'Saludo enviado con éxito' });
+        } catch (e) {
+            console.error(e);
+            res.status(500).json({ error: 'No se pudo enviar el saludo. Revisa la consola para más detalles.' });
+        }
+    } else {
+        res.setHeader('Allow', ['GET', 'POST']);
+        res.status(405).end(`Método ${req.method} no permitido`);
     }
-
-    // Método no permitido
-    res.setHeader('Allow', 'GET,POST,OPTIONS');
-    return res.status(405).json({ error: 'Método no permitido' });
-  } catch (error) {
-    console.error('Server error:', error);
-    return res.status(500).json({ error: 'Error interno', details: error?.message || String(error) });
-  }
 }
