@@ -75,7 +75,7 @@
             50% { box-shadow: 0 0 20px var(--pulse-glow-end); }
             100% { box-shadow: 0 0 10px var(--pulse-glow-start); }
         }
-        .container {
+.container {
             width: 100%;
             max-width: 700px;
             background-color: var(--container-bg-dark);
@@ -186,7 +186,7 @@
             text-decoration: none;
             display: block;
         }
-        .search-container {
+.search-container {
             flex-grow: 1;
             margin: 0 20px;
         }
@@ -458,6 +458,7 @@
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
+            margin-top: 20px;
             gap: 10px;
         }
 
@@ -500,13 +501,13 @@
 
     <div class="container">
         <header>
-            <img src="logo.jpg" alt="Logo" class="logo">
             <div class="controls">
                 <button class="menu-toggle-btn">☰</button>
                 <div class="search-container">
                     <input type="text" id="searchInput" placeholder="Buscar saludos...">
                 </div>
             </div>
+            <img src="logo.jpg" alt="Logo" class="logo">
             <h1>Cajita De Saludos</h1>
             <p>Deja tu saludo con buena onda.</p>
         </header>
@@ -534,7 +535,7 @@
             <ul class="greetings-list" id="greetingsList">
                 </ul>
         </section>
-        <div id="modalInfo" class="modal">
+<div id="modalInfo" class="modal">
             <div class="modal-content">
                 <span class="close-btn">&times;</span>
                 <div class="modal-info">
@@ -551,14 +552,11 @@
             <p>Hecho con 🔥 por elmendezz | <a href="index_admin.html">Admin</a></p>
         </footer>
     </div>
-    <script>
-        // BOT Version: 10
+<script>
+        // BOT Version: 12
         // Dependencias: Ninguna.
         // Change Log:
-        // - Se añade logo con estilo de foto de perfil.
-        // - Se agrega espacio entre el formulario y los mensajes.
-        // - Los mensajes se ordenan por fecha, del más reciente al más antiguo.
-        // - Se añaden secciones "Mensajes Nuevos" y "Mensajes Viejos" con la lógica de filtrado.
+        // - Se mueve la imagen del logo abajo de la barra de búsqueda y arriba del título principal.
 
         const API_URL = '/api/greetings.js';
         const LIKE_API_URL = '/api/like.js';
@@ -598,9 +596,9 @@
             let filteredGreetings = allGreetings;
 
             if (activeTab === 'new') {
-                filteredGreetings = allGreetings.filter(g => g.isGlowing);
+                filteredGreetings = allGreetings.filter(g => g.id);
             } else if (activeTab === 'old') {
-                filteredGreetings = allGreetings.filter(g => !g.isGlowing);
+                filteredGreetings = allGreetings.filter(g => !g.id);
             }
             renderGreetings(filteredGreetings);
         }
@@ -693,7 +691,7 @@
                 });
             });
         }
-        function showInfoModal(greeting) {
+function showInfoModal(greeting) {
             document.getElementById('modalId').textContent = greeting.id;
             document.getElementById('modalName').textContent = greeting.name;
             document.getElementById('modalMessage').textContent = greeting.message;
