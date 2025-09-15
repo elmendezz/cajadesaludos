@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cajita De Saludos - elmendezz</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            background-image: radial-gradient(circle, rgba(62, 102, 240, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #222;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid #333;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid #3e66f0;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+
+        header h1 {
+            font-size: 2em;
+            color: #fff;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(62, 102, 240, 0.5);
+        }
+
+        .form-section, .greetings-section {
+            background-color: #282828;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-section h2, .greetings-section h2 {
+            color: #3e66f0;
+            font-size: 1.5em;
+            margin-top: 0;
+            border-bottom: 2px solid #3e66f0;
+            padding-bottom: 5px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background-color: #333;
+            border: 1px solid #555;
+            color: #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #3e66f0;
+            box-shadow: 0 0 0 3px rgba(62, 102, 240, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3e66f0;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #2a4ac8;
+            transform: translateY(-2px);
+        }
+        
+        #adminBtn {
+            margin-top: 10px;
+            background-color: #555;
+        }
+        
+        #adminBtn:hover {
+            background-color: #444;
+        }
+
+        #greetingsContainer {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .greeting-card {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #3e66f0;
+            transition: transform 0.2s ease;
+        }
+
+        .greeting-card:hover {
+            transform: scale(1.02);
+        }
+        
+        .greeting-card.glowing {
+            background-color: #1c274a;
+            border-color: #3e66f0;
+            box-shadow: 0 0 15px rgba(62, 102, 240, 0.8);
+            animation: pulse-glow 2s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 10px rgba(62, 102, 240, 0.5); }
+            to { box-shadow: 0 0 20px rgba(62, 102, 240, 1.0); }
+        }
+
+        .greeting-card p {
+            margin: 0;
+            font-size: 0.95em;
+        }
+
+        .greeting-card .author {
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .greeting-card .timestamp {
+            font-size: 0.75em;
+            color: #999;
+            text-align: right;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <img src="logo.jpg" alt="Logo de la página">
+            <h1>Cajita De Saludos</h1>
+        </header>
+
+        <section class="form-section">
+            <h2>Escribe tu saludo</h2>
+            <input type="text" id="nameInput" placeholder="Tu nombre" required>
+            <textarea id="messageInput" placeholder="Tu mensaje..." rows="4" required></textarea>
+            <button id="submitBtn">Enviar saludo</button>
+            <button id="adminBtn">Admin Menu</button>
+        </section>
+
+        <section class="greetings-section">
+            <h2>Saludos de la comunidad</h2>
+            <div id="greetingsContainer">
+                </div>
+        </section>
+    </div>
+
+    <script>
+        // BOT Version: 2
+        // Change Log:
+        // - Se corrigió el error "body stream already read" al simplificar la lógica de manejo de errores.
+        // - Se asegura que la respuesta de la red se lea solo una vez.
+        
+        const nameInput = document.getElementById('nameInput');
+        const messageInput = document.getElementById('messageInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const adminBtn = document.getElementById('adminBtn');
+        const greetingsContainer = document.getElementById('greetingsContainer');
+        const ADMIN_PIN = '26435';
+
+        // Función para manejar solicitudes a la API con validación de la respuesta
+        async function apiRequest(endpoint, method, data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            const response = await fetch(endpoint, options);
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(`Error: ${response.statusText}. Detalles: ${errorData}`);
+            }
+
+            return await response.json();
+        }
+
+        async function fetchGreetings() {
+            try {
+                const greetings = await apiRequest('/api/greetings', 'GET');
+                renderGreetings(greetings);
+            } catch (e) {
+                alert("Ocurrió un error al cargar los saludos. Revisa la consola para más detalles.");
+                console.error(e);
+            }
+        }
+
+        async function addGreeting(name, message) {
+            try {
+                await apiRequest('/api/greetings', 'POST', { name, message });
+                
+                nameInput.value = '';
+                messageInput.value = '';
+                fetchGreetings();
+            } catch (e) {
+                alert(`Ocurrió un error al enviar el saludo: ${e.message}`);
+                console.error(e);
+            }
+        }
+        
+        async function runAdminAction(action) {
+            try {
+                await apiRequest('/api/admin', 'POST', { action });
+                alert(`Acción "${action}" ejecutada con éxito.`);
+                fetchGreetings();
+            } catch (e) {
+                alert(`Ocurrió un error al ejecutar la acción de admin: ${e.message}`);
+                console.error(e);
+            }
+        }
+
+        function renderGreetings(greetings) {
+            greetingsContainer.innerHTML = '';
+            const sortedGreetings = greetings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            sortedGreetings.forEach(greeting => {
+                const greetingCard = document.createElement('div');
+                greetingCard.classList.add('greeting-card');
+                if (greeting.isGlowing) {
+                    greetingCard.classList.add('glowing');
+                }
+                const timestamp = new Date(greeting.timestamp).toLocaleString();
+                greetingCard.innerHTML = `
+                    <p class="author">${greeting.name}</p>
+                    <p>${greeting.message}</p>
+                    <p class="timestamp">${timestamp}</p>
+                `;
+                greetingsContainer.appendChild(greetingCard);
+            });
+        }
+        
+        submitBtn.addEventListener('click', () => {
+            const name = nameInput.value.trim();
+            const message = messageInput.value.trim();
+            if (name && message) {
+                addGreeting(name, message);
+            } else {
+                alert('Por favor, llena todos los campos.');
+            }
+        });
+
+        adminBtn.addEventListener('click', async () => {
+            const pin = prompt('Ingresa el PIN de administrador:');
+            if (pin === ADMIN_PIN) {
+                const action = prompt('PIN correcto. ¿Qué deseas hacer? (escribe "borrar" o "glow")');
+                
+                if (action && action.toLowerCase() === 'borrar') {
+                    if (confirm('¿Estás seguro de que quieres borrar todos los saludos?')) {
+                        await runAdminAction('borrar');
+                    }
+                } else if (action && action.toLowerCase() === 'glow') {
+                    await runAdminAction('glow');
+                } else if (action !== null) {
+                    alert('Acción no reconocida. (Solo se acepta "borrar" o "glow")');
+                }
+            } else if (pin !== null) {
+                alert('PIN incorrecto. Acceso denegado.');
+            }
+        });
+
+        window.onload = fetchGreetings;
+    </script>
+</body>
+</html>
