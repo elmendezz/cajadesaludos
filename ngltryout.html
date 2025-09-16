@@ -5,9 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador NGL - elmendez_2.0</title>
     <style>
-        /* BOT Version: 1 */
+        /* BOT Version: 3 */
         /* Change Log:
-         * - Versión inicial del generador NGL.
+         * - Se actualiza el avatar para que use un archivo local (logo.jpg).
+         * - Se elimina el texto "NGL" del círculo.
+         * - Se añaden el nombre de usuario y el ID del mensaje.
+         * - Se añade la hora de envío del mensaje.
+         * - Se implementa un efecto de 'glow' condicional para mensajes especiales.
          */
         :root {
             --bg-color-dark: #1a1a1a;
@@ -20,6 +24,7 @@
             --signature-color: #555;
             --btn-color: #3e66f0;
             --btn-hover-color: #3152c7;
+            --glow-color: rgba(62, 102, 240, 0.5);
         }
 
         body {
@@ -94,7 +99,7 @@
             align-items: center;
             position: relative;
         }
-
+        
         #nglCard {
             width: 100%;
             max-width: 350px;
@@ -108,6 +113,10 @@
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: transform 0.3s ease-in-out;
+        }
+        
+        #nglCard.glowing {
+            box-shadow: 0 0 20px var(--glow-color), 0 0 40px var(--glow-color);
         }
 
         #nglCard::before {
@@ -148,6 +157,10 @@
             color: #000;
         }
 
+        .ngl-logo-content {
+            font-size: 0;
+        }
+
         .ngl-user {
             display: flex;
             align-items: center;
@@ -181,6 +194,15 @@
             line-height: 1.5;
             word-wrap: break-word;
         }
+
+        .ngl-metadata {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.6);
+        }
     </style>
 </head>
 <body>
@@ -195,17 +217,22 @@
         <button id="downloadBtn" class="main-btn" style="display: none; margin-top: 15px;">Descargar Imagen 💾</button>
         <div id="nglCardContainer">
             <div id="nglCard">
-                <div class="ngl-logo">NGL</div>
+                <div class="ngl-logo">
+                    <span class="ngl-logo-content"></span>
+                </div>
                 <div id="nglCardContent">
                     <div class="ngl-user">
                         <img id="nglAvatar" src="https://via.placeholder.com/50" alt="Avatar">
                         <div class="ngl-user-info">
-                            <p class="ngl-username">elmendez_2.0</p>
-                            <small style="color: rgba(255,255,255,0.7);">¡Recibiste un mensaje anónimo! 💌</small>
+                            <p class="ngl-username" id="nglUsername"></p>
                         </div>
                     </div>
                     <div class="ngl-message">
                         <p id="nglMessageText"></p>
+                    </div>
+                    <div class="ngl-metadata">
+                        <span id="nglMessageId"></span>
+                        <span id="nglTimestamp"></span>
                     </div>
                 </div>
             </div>
@@ -218,21 +245,28 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        // Version: 2
+        // Version: 3
         // Dependencias: html2canvas
         // Change Log:
-        // - Se modifica la configuración de html2canvas para crear una imagen PNG con fondo transparente.
-        // - Se actualiza la URL del avatar para que sea un logo en formato JPG.
+        // - Se actualiza el avatar para que use un archivo local (logo.jpg).
+        // - Se elimina el texto "NGL" del círculo blanco.
+        // - Se añaden el nombre de usuario y el ID del mensaje a la tarjeta.
+        // - Se añade la hora de envío del mensaje.
+        // - Se agrega la clase `glowing` a la tarjeta si el mensaje tiene la propiedad `isGlowing`.
         
         const API_URL = '/api/greetings.js';
         const MESSAGE_ID_INPUT = document.getElementById('messageIdInput');
         const GENERATE_BTN = document.getElementById('generateBtn');
         const DOWNLOAD_BTN = document.getElementById('downloadBtn');
         const NGL_CARD_CONTAINER = document.getElementById('nglCardContainer');
+        const NGL_CARD = document.getElementById('nglCard');
         const NGL_MESSAGE_TEXT = document.getElementById('nglMessageText');
         const NGL_AVATAR = document.getElementById('nglAvatar');
+        const NGL_USERNAME = document.getElementById('nglUsername');
+        const NGL_MESSAGE_ID = document.getElementById('nglMessageId');
+        const NGL_TIMESTAMP = document.getElementById('nglTimestamp');
 
-        const DEFAULT_AVATAR = 'https://i.ibb.co/L62gHqQ/logo-min.jpg';
+        const DEFAULT_AVATAR = 'logo.jpg';
 
         async function fetchMessageById(id) {
             try {
@@ -248,6 +282,12 @@
             }
         }
         
+        function formatTimestamp(isoString) {
+            const date = new Date(isoString);
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return date.toLocaleDateString('es-ES', options);
+        }
+
         GENERATE_BTN.addEventListener('click', async () => {
             const messageId = MESSAGE_ID_INPUT.value.trim();
             if (!messageId) {
@@ -260,6 +300,16 @@
             if (message) {
                 NGL_MESSAGE_TEXT.textContent = message.message;
                 NGL_AVATAR.src = DEFAULT_AVATAR;
+                NGL_USERNAME.textContent = message.name || 'Usuario Anónimo';
+                NGL_MESSAGE_ID.textContent = `ID: ${message.id}`;
+                NGL_TIMESTAMP.textContent = formatTimestamp(message.timestamp);
+
+                if (message.isGlowing) {
+                    NGL_CARD.classList.add('glowing');
+                } else {
+                    NGL_CARD.classList.remove('glowing');
+                }
+
                 NGL_CARD_CONTAINER.style.display = 'flex';
                 DOWNLOAD_BTN.style.display = 'block';
             } else {
@@ -270,10 +320,9 @@
         });
 
         DOWNLOAD_BTN.addEventListener('click', () => {
-            const card = document.getElementById('nglCard');
-            html2canvas(card, {
+            html2canvas(NGL_CARD, {
                 useCORS: true,
-                backgroundColor: null // Para un fondo transparente
+                backgroundColor: null 
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `ngl-message-${MESSAGE_ID_INPUT.value}.png`;
