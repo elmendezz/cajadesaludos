@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador NGL - elmendez_2.0</title>
     <style>
-        /* BOT Version: 13 */
+        /* BOT Version: 14 */
         /* HTML Changelog:
-         * - La interfaz de usuario vuelve a la normalidad.
-         * - La relación de aspecto 9:16 se aplica SÓLO al descargar la imagen.
-         * - Se elimina el texto 'NGL.LINK' y 'anonymous q&a'.
+         * - Se optimiza la escala de html2canvas para mejorar la calidad de la imagen descargada.
+         * - Se aumenta el tamaño de la tarjeta para una mejor visualización del texto.
+         * - Se añade la versión de la página al final.
          */
         :root {
             --bg-color-dark: #1a1a1a;
@@ -212,7 +212,6 @@
             display: none;
         }
 
-        /* Clase temporal para la exportación */
         .story-export-container {
             width: 1080px;
             height: 1920px;
@@ -221,7 +220,10 @@
             justify-content: center;
             align-items: center;
             position: absolute;
-            top: -9999px; /* Oculta el contenedor de la pantalla */
+            top: -9999px;
+            left: -9999px;
+            padding: 100px;
+            box-sizing: border-box;
         }
 
     </style>
@@ -273,16 +275,16 @@
     
     <footer>
         <p style="text-align: center; margin-top: 30px; font-size: 0.8em; color: var(--signature-color);">Hecho con cariño por @elmendez_2.0</p>
+        <p style="text-align: center; font-size: 0.8em; color: var(--signature-color);">Versión 14 activa</p>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        // Version: 13
+        // Version: 14
         // Dependencias: html2canvas
         // Change Log:
-        // - Se modifica la lógica de descarga para crear una imagen con formato de historia.
-        // - La interfaz de usuario ya no se ve como una historia.
-        // - Se remueven los textos extra como 'NGL.LINK'.
+        // - Se mejora la escala de html2canvas para aumentar la resolución de la imagen de descarga.
+        // - Se centra la tarjeta de mensaje en el contenedor de exportación para la historia.
         
         const API_URL = '/api/greetings.js';
         const MESSAGE_ID_INPUT = document.getElementById('messageIdInput');
@@ -419,7 +421,6 @@
             NGL_CARD.classList.remove('glowing');
             NGL_AVATAR.src = avatarSrc;
             
-            NGL_LOGO_DIV.classList.remove('sleep');
             CARD_TITLE_SPAN.textContent = CARD_TITLE_INPUT.value.trim().toUpperCase() || '';
 
             NGL_CARD_CONTAINER.style.display = 'flex';
@@ -433,14 +434,16 @@
             
             const clonedCard = NGL_CARD.cloneNode(true);
             clonedCard.style.maxWidth = 'unset';
-            clonedCard.style.width = '80%';
-            clonedCard.style.transform = 'scale(1)';
+            clonedCard.style.width = '70%';
+            clonedCard.style.position = 'relative';
+            clonedCard.style.top = 'unset';
+            clonedCard.style.left = 'unset';
             tempContainer.appendChild(clonedCard);
             
             html2canvas(tempContainer, {
                 useCORS: true,
                 backgroundColor: null,
-                scale: 1
+                scale: 2 // Escala para alta resolución
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `ngl-message-${MESSAGE_ID_INPUT.value}.png`;
