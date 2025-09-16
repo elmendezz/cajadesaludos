@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador NGL - elmendez_2.0</title>
     <style>
-        /* BOT Version: 10 */
+        /* BOT Version: 11 */
         /* HTML Changelog:
-         * - Optimización del efecto de 'glow' para que la exportación con html2canvas sea más consistente.
-         * - Se añadió un `inset` a la propiedad `box-shadow` para evitar bordes negros en el PNG final.
-         * - Se actualizó el `box-shadow` para que funcione mejor con el glow.
+         * - Se mejora la visibilidad del efecto 'glow'.
+         * - Se agrega el ícono de sueño (😴) en la esquina superior derecha.
+         * - Se actualiza el `box-shadow` para que el brillo sea más intenso y se exporte correctamente.
          */
         :root {
             --bg-color-dark: #1a1a1a;
@@ -22,7 +22,7 @@
             --signature-color: #555;
             --btn-color: #3e66f0;
             --btn-hover-color: #3152c7;
-            --glow-color: rgba(62, 102, 240, 0.5);
+            --glow-color: rgba(62, 102, 240, 0.8); /* Glow más intenso */
         }
 
         body {
@@ -113,11 +113,10 @@
             transition: transform 0.3s ease-in-out;
         }
         
-        /* Nuevo efecto de glow estático y robusto */
         #nglCard.glowing {
             box-shadow: 
-                0 0 10px 5px var(--glow-color), 
-                0 0 20px 10px var(--glow-color),
+                0 0 15px 7px var(--glow-color), /* Más dispersión y tamaño */
+                0 0 30px 15px var(--glow-color), /* Segundo glow más grande */
                 inset 0 0 0 1px #1a1a1a;
             border: 1px solid var(--accent-color);
         }
@@ -159,6 +158,12 @@
             font-size: 1.2em;
             color: #000;
         }
+
+        .ngl-logo.sleep {
+            background-color: transparent;
+            font-size: 2.5em;
+        }
+
         
         #cardTitle {
             line-height: 1;
@@ -287,11 +292,11 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        // Version: 10
+        // Version: 11
         // Dependencias: html2canvas
         // Change Log:
-        // - Se modifica el efecto de 'glow' para que la exportación con html2canvas sea más consistente.
-        // - Se eliminan los bordes negros agregando un 'inset box-shadow'.
+        // - Se mejora la visibilidad del efecto 'glow'.
+        // - Se agrega el ícono de sueño (😴) en la esquina superior derecha.
         
         const API_URL = '/api/greetings.js';
         const MESSAGE_ID_INPUT = document.getElementById('messageIdInput');
@@ -308,6 +313,7 @@
         const PREVIEW_IMAGE = document.getElementById('previewImage');
         const CARD_TITLE_INPUT = document.getElementById('cardTitleInput');
         const CARD_TITLE_SPAN = document.getElementById('cardTitle');
+        const NGL_LOGO_DIV = document.querySelector('.ngl-logo');
 
         const ANONYMOUS_AVATAR = 'user.jpg';
         const GLOW_AVATAR = 'logo.jpg';
@@ -385,7 +391,8 @@
                     name: '@elmendez_2.0',
                     message: '¡Prueba de mensaje exitosa! Todo está funcionando correctamente.  ',
                     timestamp: new Date().toISOString(),
-                    isGlowing: true
+                    isGlowing: true,
+                    isSleep: true
                 };
                 updateCard(testMessage);
                 return;
@@ -397,7 +404,8 @@
                     name: 'Usuario de Prueba',
                     message: '¡Este es un mensaje de prueba para verificar que el sistema funciona bien!',
                     timestamp: new Date().toISOString(),
-                    isGlowing: false
+                    isGlowing: false,
+                    isSleep: false
                 };
                 updateCard(testMessage);
                 return;
@@ -430,9 +438,15 @@
                 NGL_CARD.classList.remove('glowing');
                 NGL_AVATAR.src = avatarSrc;
             }
-            
-            CARD_TITLE_SPAN.textContent = CARD_TITLE_INPUT.value.trim().toUpperCase() || '';
 
+            if (message.isSleep) {
+                NGL_LOGO_DIV.classList.add('sleep');
+                CARD_TITLE_SPAN.textContent = '😴';
+            } else {
+                NGL_LOGO_DIV.classList.remove('sleep');
+                CARD_TITLE_SPAN.textContent = CARD_TITLE_INPUT.value.trim().toUpperCase() || '';
+            }
+            
             NGL_CARD_CONTAINER.style.display = 'flex';
             DOWNLOAD_BTN.style.display = 'block';
         }
