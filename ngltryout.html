@@ -218,10 +218,11 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        // Version: 1
+        // Version: 2
         // Dependencias: html2canvas
         // Change Log:
-        // - Versión inicial, agrega la lógica para generar y descargar la tarjeta NGL.
+        // - Se modifica la configuración de html2canvas para crear una imagen PNG con fondo transparente.
+        // - Se actualiza la URL del avatar para que sea un logo en formato JPG.
         
         const API_URL = '/api/greetings.js';
         const MESSAGE_ID_INPUT = document.getElementById('messageIdInput');
@@ -231,7 +232,7 @@
         const NGL_MESSAGE_TEXT = document.getElementById('nglMessageText');
         const NGL_AVATAR = document.getElementById('nglAvatar');
 
-        const DEFAULT_AVATAR = 'https://media.licdn.com/dms/image/D4E03AQE1gS0KxT4l0g/profile-displayphoto-shrink_800_800/0/1683457198755?e=2147483647&v=beta&t=U34x-m_U37r8yFfB3gS1oP8Qd7vLgC0D7zL6L2f3s4o';
+        const DEFAULT_AVATAR = 'https://i.ibb.co/L62gHqQ/logo-min.jpg';
 
         async function fetchMessageById(id) {
             try {
