@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador NGL - elmendez_2.0</title>
     <style>
-        /* BOT Version: 14 */
+        /* BOT Version: 15 */
         /* HTML Changelog:
-         * - Se optimiza la escala de html2canvas para mejorar la calidad de la imagen descargada.
-         * - Se aumenta el tamaño de la tarjeta para una mejor visualización del texto.
-         * - Se añade la versión de la página al final.
+         * - Se mejora significativamente el tamaño de la tarjeta y la resolución de la imagen descargada.
+         * - Se optimiza la escala de html2canvas para una imagen de mayor calidad.
+         * - Se mantiene la versión en el pie de página.
          */
         :root {
             --bg-color-dark: #1a1a1a;
@@ -212,6 +212,7 @@
             display: none;
         }
 
+        /* Clase temporal para la exportación */
         .story-export-container {
             width: 1080px;
             height: 1920px;
@@ -275,16 +276,15 @@
     
     <footer>
         <p style="text-align: center; margin-top: 30px; font-size: 0.8em; color: var(--signature-color);">Hecho con cariño por @elmendez_2.0</p>
-        <p style="text-align: center; font-size: 0.8em; color: var(--signature-color);">Versión 14 activa</p>
+        <p style="text-align: center; font-size: 0.8em; color: var(--signature-color);">Versión 15 activa</p>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        // Version: 14
+        // Version: 15
         // Dependencias: html2canvas
         // Change Log:
-        // - Se mejora la escala de html2canvas para aumentar la resolución de la imagen de descarga.
-        // - Se centra la tarjeta de mensaje en el contenedor de exportación para la historia.
+        // - Se mejora significativamente el tamaño y la calidad de la imagen descargada en formato historia.
         
         const API_URL = '/api/greetings.js';
         const MESSAGE_ID_INPUT = document.getElementById('messageIdInput');
@@ -301,7 +301,6 @@
         const PREVIEW_IMAGE = document.getElementById('previewImage');
         const CARD_TITLE_INPUT = document.getElementById('cardTitleInput');
         const CARD_TITLE_SPAN = document.getElementById('cardTitle');
-        const NGL_LOGO_DIV = document.querySelector('.ngl-logo');
 
         const ANONYMOUS_AVATAR = 'user.jpg';
         const GLOW_AVATAR = 'logo.jpg';
@@ -434,7 +433,7 @@
             
             const clonedCard = NGL_CARD.cloneNode(true);
             clonedCard.style.maxWidth = 'unset';
-            clonedCard.style.width = '70%';
+            clonedCard.style.width = '85%'; /* Aumenta el tamaño de la tarjeta */
             clonedCard.style.position = 'relative';
             clonedCard.style.top = 'unset';
             clonedCard.style.left = 'unset';
@@ -443,7 +442,7 @@
             html2canvas(tempContainer, {
                 useCORS: true,
                 backgroundColor: null,
-                scale: 2 // Escala para alta resolución
+                scale: 5 // Aumenta la escala para una mayor resolución
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `ngl-message-${MESSAGE_ID_INPUT.value}.png`;
