@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador NGL - elmendez_2.0</title>
     <style>
-        /* BOT Version: 3 */
+        /* BOT Version: 7 */
         /* Change Log:
-         * - Se actualiza el avatar para que use un archivo local (logo.jpg).
-         * - Se elimina el texto "NGL" del círculo.
-         * - Se añaden el nombre de usuario y el ID del mensaje.
-         * - Se añade la hora de envío del mensaje.
-         * - Se implementa un efecto de 'glow' condicional para mensajes especiales.
+         * - Se añade un campo de texto para personalizar el contenido del círculo de NGL.
+         * - Se actualiza la lógica para que el círculo muestre el texto personalizado o se mantenga vacío si no se ingresa nada.
          */
         :root {
             --bg-color-dark: #1a1a1a;
@@ -157,10 +154,6 @@
             color: #000;
         }
 
-        .ngl-logo-content {
-            font-size: 0;
-        }
-
         .ngl-user {
             display: flex;
             align-items: center;
@@ -203,6 +196,34 @@
             font-size: 0.8em;
             color: rgba(255, 255, 255, 0.6);
         }
+        
+        #customOptionsContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        #imageInput, #cardTitleInput {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color-dark);
+            background-color: var(--card-bg-dark);
+            color: var(--text-color-dark);
+            box-sizing: border-box;
+        }
+
+        #previewImage {
+            margin-top: 10px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-color);
+            object-fit: cover;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -213,12 +234,23 @@
         <div class="form-group">
             <input type="text" id="messageIdInput" placeholder="Pega el ID del mensaje aquí">
         </div>
+        
+        <div id="customOptionsContainer">
+            <label for="imageInput">Avatar Anónimo Personalizado:</label>
+            <input type="file" id="imageInput" accept="image/*">
+            <img id="previewImage" alt="Vista previa del avatar personalizado">
+            
+            <label for="cardTitleInput">Texto del Círculo (NGL):</label>
+            <input type="text" id="cardTitleInput" placeholder="Escribe tu texto, ej: MEZ">
+        </div>
+        
         <button id="generateBtn" class="main-btn">Generar Mensaje 🚀</button>
         <button id="downloadBtn" class="main-btn" style="display: none; margin-top: 15px;">Descargar Imagen 💾</button>
+        
         <div id="nglCardContainer">
             <div id="nglCard">
                 <div class="ngl-logo">
-                    <span class="ngl-logo-content"></span>
+                    <span id="cardTitle"></span>
                 </div>
                 <div id="nglCardContent">
                     <div class="ngl-user">
@@ -245,14 +277,12 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        // Version: 3
+        // Version: 7
         // Dependencias: html2canvas
         // Change Log:
-        // - Se actualiza el avatar para que use un archivo local (logo.jpg).
-        // - Se elimina el texto "NGL" del círculo blanco.
-        // - Se añaden el nombre de usuario y el ID del mensaje a la tarjeta.
-        // - Se añade la hora de envío del mensaje.
-        // - Se agrega la clase `glowing` a la tarjeta si el mensaje tiene la propiedad `isGlowing`.
+        // - Se añade la posibilidad de personalizar el texto dentro del círculo de la tarjeta.
+        // - Se integra la lógica para manejar los ID de prueba "mendez" y "mendez1".
+        // - Se mantiene la funcionalidad de personalización del avatar con localStorage.
         
         const API_URL = '/api/greetings.js';
         const MESSAGE_ID_INPUT = document.getElementById('messageIdInput');
@@ -265,8 +295,52 @@
         const NGL_USERNAME = document.getElementById('nglUsername');
         const NGL_MESSAGE_ID = document.getElementById('nglMessageId');
         const NGL_TIMESTAMP = document.getElementById('nglTimestamp');
+        const IMAGE_INPUT = document.getElementById('imageInput');
+        const PREVIEW_IMAGE = document.getElementById('previewImage');
+        const CARD_TITLE_INPUT = document.getElementById('cardTitleInput');
+        const CARD_TITLE_SPAN = document.getElementById('cardTitle');
 
-        const DEFAULT_AVATAR = 'logo.jpg';
+        const ANONYMOUS_AVATAR = 'user.jpg';
+        const GLOW_AVATAR = 'logo.jpg';
+        
+        // Cargar la imagen personalizada desde localStorage si existe
+        window.addEventListener('load', () => {
+            const storedImage = localStorage.getItem('customAvatar');
+            if (storedImage) {
+                PREVIEW_IMAGE.src = storedImage;
+                PREVIEW_IMAGE.style.display = 'block';
+            }
+        });
+
+        IMAGE_INPUT.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const MAX_SIZE = 200;
+                        const scaleSize = Math.min(MAX_SIZE / img.width, MAX_SIZE / img.height, 1);
+                        canvas.width = img.width * scaleSize;
+                        canvas.height = img.height * scaleSize;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                        localStorage.setItem('customAvatar', compressedDataUrl);
+                        PREVIEW_IMAGE.src = compressedDataUrl;
+                        PREVIEW_IMAGE.style.display = 'block';
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        CARD_TITLE_INPUT.addEventListener('input', (e) => {
+            CARD_TITLE_SPAN.textContent = e.target.value.trim().toUpperCase();
+        });
 
         async function fetchMessageById(id) {
             try {
@@ -289,35 +363,71 @@
         }
 
         GENERATE_BTN.addEventListener('click', async () => {
-            const messageId = MESSAGE_ID_INPUT.value.trim();
+            const messageId = MESSAGE_ID_INPUT.value.trim().toLowerCase();
+
             if (!messageId) {
                 alert('Por favor, ingresa un ID de mensaje.');
+                return;
+            }
+
+            if (messageId === 'mendez') {
+                const testMessage = {
+                    id: 'test-id-123',
+                    name: '@elmendez_2.0',
+                    message: '¡Prueba de mensaje exitosa! Todo está funcionando correctamente. 😎',
+                    timestamp: new Date().toISOString(),
+                    isGlowing: true
+                };
+                updateCard(testMessage);
+                return;
+            }
+            
+            if (messageId === 'mendez1') {
+                const testMessage = {
+                    id: 'test-id-456',
+                    name: 'Usuario de Prueba',
+                    message: '¡Este es un mensaje de prueba para verificar que el sistema funciona bien!',
+                    timestamp: new Date().toISOString(),
+                    isGlowing: false
+                };
+                updateCard(testMessage);
                 return;
             }
 
             const message = await fetchMessageById(messageId);
             
             if (message) {
-                NGL_MESSAGE_TEXT.textContent = message.message;
-                NGL_AVATAR.src = DEFAULT_AVATAR;
-                NGL_USERNAME.textContent = message.name || 'Usuario Anónimo';
-                NGL_MESSAGE_ID.textContent = `ID: ${message.id}`;
-                NGL_TIMESTAMP.textContent = formatTimestamp(message.timestamp);
-
-                if (message.isGlowing) {
-                    NGL_CARD.classList.add('glowing');
-                } else {
-                    NGL_CARD.classList.remove('glowing');
-                }
-
-                NGL_CARD_CONTAINER.style.display = 'flex';
-                DOWNLOAD_BTN.style.display = 'block';
+                updateCard(message);
             } else {
                 alert('No se encontró un mensaje con ese ID.');
                 NGL_CARD_CONTAINER.style.display = 'none';
                 DOWNLOAD_BTN.style.display = 'none';
             }
         });
+
+        function updateCard(message) {
+            NGL_MESSAGE_TEXT.textContent = message.message;
+            NGL_USERNAME.textContent = message.name || 'Usuario Anónimo';
+            NGL_MESSAGE_ID.textContent = `ID: ${message.id}`;
+            NGL_TIMESTAMP.textContent = formatTimestamp(message.timestamp);
+
+            const customAvatar = localStorage.getItem('customAvatar');
+            const avatarSrc = customAvatar ? customAvatar : ANONYMOUS_AVATAR;
+
+            if (message.isGlowing) {
+                NGL_CARD.classList.add('glowing');
+                NGL_AVATAR.src = GLOW_AVATAR;
+            } else {
+                NGL_CARD.classList.remove('glowing');
+                NGL_AVATAR.src = avatarSrc;
+            }
+            
+            // Actualizar el texto del círculo
+            CARD_TITLE_SPAN.textContent = CARD_TITLE_INPUT.value.trim().toUpperCase() || '';
+
+            NGL_CARD_CONTAINER.style.display = 'flex';
+            DOWNLOAD_BTN.style.display = 'block';
+        }
 
         DOWNLOAD_BTN.addEventListener('click', () => {
             html2canvas(NGL_CARD, {
