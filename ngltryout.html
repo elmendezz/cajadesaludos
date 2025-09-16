@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador NGL - elmendez_2.0</title>
     <style>
-        /* BOT Version: 15 */
+        /* BOT Version: 28 */
         /* HTML Changelog:
-         * - Se mejora significativamente el tamaño de la tarjeta y la resolución de la imagen descargada.
-         * - Se optimiza la escala de html2canvas para una imagen de mayor calidad.
-         * - Se mantiene la versión en el pie de página.
+         * - Se corrige el error que hacía que los números se vieran afectados por la tipografía cargada, incluso sin la casilla de verificación.
+         * - Se modifica la función de aplicación de fuente para que excluya los números de forma permanente, asegurando que siempre mantengan su estilo original.
          */
         :root {
             --bg-color-dark: #1a1a1a;
@@ -88,7 +87,7 @@
             background-color: var(--btn-hover-color);
             transform: translateY(-2px);
         }
-
+        
         #nglCardContainer {
             margin-top: 30px;
             display: none; /* Oculto por defecto */
@@ -110,6 +109,8 @@
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: transform 0.3s ease-in-out;
+            /* Aplicar la fuente del sistema por defecto */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         
         #nglCard:hover {
@@ -174,6 +175,10 @@
             line-height: 1.5;
             word-wrap: break-word;
         }
+        
+        .ngl-message span {
+            /* Fuente personalizada para el texto */
+        }
 
         .ngl-metadata {
             display: flex;
@@ -192,7 +197,7 @@
             width: 100%;
         }
 
-        #imageInput, #cardTitleInput {
+        #imageInput, #cardTitleInput, #fontInput {
             width: 100%;
             padding: 10px;
             border-radius: 8px;
@@ -201,7 +206,27 @@
             color: var(--text-color-dark);
             box-sizing: border-box;
         }
-
+        
+        .checkbox-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            width: 100%;
+            margin-top: 5px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-item input {
+            width: auto;
+            margin: 0;
+        }
+        
         #previewImage {
             margin-top: 10px;
             width: 80px;
@@ -211,22 +236,26 @@
             object-fit: cover;
             display: none;
         }
-
-        /* Clase temporal para la exportación */
+        
+        /* Clase temporal para la exportación de historia */
         .story-export-container {
             width: 1080px;
             height: 1920px;
-            background-color: #000;
+            background-color: #121212;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             position: absolute;
             top: -9999px;
             left: -9999px;
-            padding: 100px;
-            box-sizing: border-box;
         }
-
+        
+        .story-export-container #nglCard {
+            max-width: unset;
+            width: 600px;
+            transform: translateY(-200px);
+        }
     </style>
 </head>
 <body>
@@ -245,10 +274,26 @@
             
             <label for="cardTitleInput">Texto del Círculo (NGL):</label>
             <input type="text" id="cardTitleInput" placeholder="Escribe tu texto, ej: MEZ">
+            
+            <label for="fontInput">Cargar Fuente (.ttf):</label>
+            <input type="file" id="fontInput" accept=".ttf">
+            <span id="fontNameDisplay" style="font-size: 0.9em; margin-top: 5px; opacity: 0.7;">No se ha cargado ninguna fuente.</span>
+            
+            <div class="checkbox-container">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="fontToggleText">
+                    <label for="fontToggleText">Aplicar fuente a texto</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="fontToggleEmojis">
+                    <label for="fontToggleEmojis">Aplicar fuente a emojis</label>
+                </div>
+            </div>
         </div>
         
         <button id="generateBtn" class="main-btn">Generar Mensaje</button>
         <button id="downloadBtn" class="main-btn" style="display: none; margin-top: 15px;">Descargar Imagen</button>
+        <button id="downloadStoryBtn" class="main-btn" style="display: none; margin-top: 15px; background-color: #555;">Descargar como Historia (Alternativa)</button>
         
         <div id="nglCardContainer">
             <div id="nglCard">
@@ -276,20 +321,22 @@
     
     <footer>
         <p style="text-align: center; margin-top: 30px; font-size: 0.8em; color: var(--signature-color);">Hecho con cariño por @elmendez_2.0</p>
-        <p style="text-align: center; font-size: 0.8em; color: var(--signature-color);">Versión 15 activa</p>
+        <p style="text-align: center; font-size: 0.8em; color: var(--signature-color);">Versión 28 activa</p>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        // Version: 15
+        // Version: 28
         // Dependencias: html2canvas
         // Change Log:
-        // - Se mejora significativamente el tamaño y la calidad de la imagen descargada en formato historia.
+        // - Se corrige un error crítico donde la fuente personalizada afectaba a los números, volviéndolos ilegibles o transformándolos en otros caracteres.
+        // - Se asegura de manera forzada que los números siempre utilicen la tipografía original del sistema, sin importar las casillas de verificación.
         
         const API_URL = '/api/greetings.js';
         const MESSAGE_ID_INPUT = document.getElementById('messageIdInput');
         const GENERATE_BTN = document.getElementById('generateBtn');
         const DOWNLOAD_BTN = document.getElementById('downloadBtn');
+        const DOWNLOAD_STORY_BTN = document.getElementById('downloadStoryBtn');
         const NGL_CARD_CONTAINER = document.getElementById('nglCardContainer');
         const NGL_CARD = document.getElementById('nglCard');
         const NGL_MESSAGE_TEXT = document.getElementById('nglMessageText');
@@ -301,10 +348,16 @@
         const PREVIEW_IMAGE = document.getElementById('previewImage');
         const CARD_TITLE_INPUT = document.getElementById('cardTitleInput');
         const CARD_TITLE_SPAN = document.getElementById('cardTitle');
-
+        const FONT_INPUT = document.getElementById('fontInput');
+        const FONT_NAME_DISPLAY = document.getElementById('fontNameDisplay');
+        const FONT_TOGGLE_TEXT = document.getElementById('fontToggleText');
+        const FONT_TOGGLE_EMOJIS = document.getElementById('fontToggleEmojis');
+        
         const ANONYMOUS_AVATAR = 'user.jpg';
         const GLOW_AVATAR = 'logo.jpg';
         
+        let customFontName = null;
+
         window.addEventListener('load', () => {
             const storedImage = localStorage.getItem('customAvatar');
             if (storedImage) {
@@ -342,6 +395,58 @@
         CARD_TITLE_INPUT.addEventListener('input', (e) => {
             CARD_TITLE_SPAN.textContent = e.target.value.trim().toUpperCase();
         });
+        
+        FONT_INPUT.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const fontName = file.name.replace(/\.[^/.]+$/, "");
+                const fontUrl = URL.createObjectURL(file);
+                
+                const styleTag = document.createElement('style');
+                styleTag.id = 'dynamic-font-style';
+                styleTag.textContent = `
+                    @font-face {
+                        font-family: "${fontName}";
+                        src: url("${fontUrl}") format("truetype");
+                    }
+                `;
+                
+                const oldStyleTag = document.getElementById('dynamic-font-style');
+                if (oldStyleTag) {
+                    oldStyleTag.remove();
+                }
+                document.head.appendChild(styleTag);
+                
+                customFontName = fontName;
+                FONT_NAME_DISPLAY.textContent = `Fuente cargada: ${fontName}`;
+                
+                // Forzar una actualización si la tarjeta ya está visible
+                if (NGL_CARD_CONTAINER.style.display !== 'none') {
+                    GENERATE_BTN.click();
+                }
+            } else {
+                customFontName = null;
+                FONT_NAME_DISPLAY.textContent = `No se ha cargado ninguna fuente.`;
+                NGL_MESSAGE_TEXT.style.fontFamily = `inherit`;
+                CARD_TITLE_SPAN.style.fontFamily = `inherit`;
+            }
+        });
+        
+        const toggleCheckboxes = [FONT_TOGGLE_TEXT, FONT_TOGGLE_EMOJIS];
+        toggleCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                if (NGL_CARD_CONTAINER.style.display === 'flex') {
+                    GENERATE_BTN.click();
+                }
+            });
+        });
+        
+        CARD_TITLE_INPUT.addEventListener('input', () => {
+             if (NGL_CARD_CONTAINER.style.display === 'flex') {
+                 // Disparar la generación para aplicar el nuevo texto y la fuente
+                 GENERATE_BTN.click();
+             }
+        });
 
         async function fetchMessageById(id) {
             try {
@@ -362,6 +467,32 @@
             const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
             return date.toLocaleDateString('es-ES', options);
         }
+        
+        function applyFontSelectively(text, fontName, applyText, applyEmojis) {
+            const fragment = document.createDocumentFragment();
+            // Expresión regular para separar letras, números, y emojis
+            const regex = /(\p{L}+|\p{N}+|\p{Emoji_Presentation}+|.)/gu;
+            
+            let match;
+            while ((match = regex.exec(text)) !== null) {
+                const part = match[0];
+                const isLetter = part.match(/\p{L}/u);
+                const isNumber = part.match(/\p{N}/u);
+                const isEmoji = part.match(/\p{Emoji_Presentation}/u);
+                const isSpace = part === ' ';
+
+                // Solo aplica la fuente si es texto O emoji, y la casilla está marcada
+                if (!isSpace && !isNumber && ((isLetter && applyText) || (isEmoji && applyEmojis))) {
+                    const span = document.createElement('span');
+                    span.style.fontFamily = `"${fontName}", sans-serif`;
+                    span.textContent = part;
+                    fragment.appendChild(span);
+                } else {
+                    fragment.appendChild(document.createTextNode(part));
+                }
+            }
+            return fragment;
+        }
 
         GENERATE_BTN.addEventListener('click', async () => {
             const messageId = MESSAGE_ID_INPUT.value.trim().toLowerCase();
@@ -375,7 +506,7 @@
                 const testMessage = {
                     id: 'test-id-123',
                     name: '@elmendez_2.0',
-                    message: '¡Prueba de mensaje exitosa! Todo está funcionando correctamente.  ',
+                    message: '¡Prueba de mensaje exitosa! 100%. Todo está funcionando correctamente. ✅',
                     timestamp: new Date().toISOString(),
                     isGlowing: false,
                     isSleep: false
@@ -388,7 +519,7 @@
                 const testMessage = {
                     id: 'test-id-456',
                     name: 'Usuario de Prueba',
-                    message: '¡Este es un mensaje de prueba para verificar que el sistema funciona bien!',
+                    message: '¡Este es un mensaje de prueba para verificar que el sistema funciona bien! 💯',
                     timestamp: new Date().toISOString(),
                     isGlowing: false,
                     isSleep: false
@@ -405,11 +536,31 @@
                 alert('No se encontró un mensaje con ese ID.');
                 NGL_CARD_CONTAINER.style.display = 'none';
                 DOWNLOAD_BTN.style.display = 'none';
+                DOWNLOAD_STORY_BTN.style.display = 'none';
             }
         });
 
         function updateCard(message) {
-            NGL_MESSAGE_TEXT.textContent = message.message;
+            NGL_MESSAGE_TEXT.textContent = '';
+            
+            const useFont = customFontName !== null;
+            const applyText = FONT_TOGGLE_TEXT.checked;
+            const applyEmojis = FONT_TOGGLE_EMOJIS.checked;
+
+            if (useFont && (applyText || applyEmojis)) {
+                const formattedMessage = applyFontSelectively(message.message, customFontName, applyText, applyEmojis);
+                NGL_MESSAGE_TEXT.appendChild(formattedMessage);
+            } else {
+                NGL_MESSAGE_TEXT.textContent = message.message;
+            }
+            
+            // Aplicar la fuente al logo si está cargada y alguna de las casillas está seleccionada
+            if (useFont && (applyText || applyEmojis)) {
+                CARD_TITLE_SPAN.style.fontFamily = `"${customFontName}", sans-serif`;
+            } else {
+                CARD_TITLE_SPAN.style.fontFamily = `inherit`;
+            }
+            
             NGL_USERNAME.textContent = message.name || 'Usuario Anónimo';
             NGL_MESSAGE_ID.textContent = `ID: ${message.id}`;
             NGL_TIMESTAMP.textContent = formatTimestamp(message.timestamp);
@@ -424,28 +575,38 @@
 
             NGL_CARD_CONTAINER.style.display = 'flex';
             DOWNLOAD_BTN.style.display = 'block';
+            DOWNLOAD_STORY_BTN.style.display = 'block';
         }
 
         DOWNLOAD_BTN.addEventListener('click', () => {
+            html2canvas(NGL_CARD, {
+                useCORS: true,
+                backgroundColor: null,
+                scale: 16
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `ngl-message-${MESSAGE_ID_INPUT.value}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        });
+
+        DOWNLOAD_STORY_BTN.addEventListener('click', () => {
             const tempContainer = document.createElement('div');
             tempContainer.classList.add('story-export-container');
             document.body.appendChild(tempContainer);
             
             const clonedCard = NGL_CARD.cloneNode(true);
-            clonedCard.style.maxWidth = 'unset';
-            clonedCard.style.width = '200%'; /* Aumenta el tamaño de la tarjeta */
-            clonedCard.style.position = 'relative';
-            clonedCard.style.top = 'unset';
-            clonedCard.style.left = 'unset';
+            clonedCard.id = 'clonedCardForExport';
             tempContainer.appendChild(clonedCard);
             
             html2canvas(tempContainer, {
                 useCORS: true,
                 backgroundColor: null,
-                scale: 5 // Aumenta la escala para una mayor resolución
+                scale: 4
             }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `ngl-message-${MESSAGE_ID_INPUT.value}.png`;
+                link.download = `ngl-story-${MESSAGE_ID_INPUT.value}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
                 tempContainer.remove();
@@ -455,5 +616,3 @@
     </script>
 </body>
 </html>
-
-
