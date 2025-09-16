@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador NGL - elmendez_2.0</title>
     <style>
-        /* BOT Version: 7 */
+        /* BOT Version: 8 */
         /* Change Log:
-         * - Se añade un campo de texto para personalizar el contenido del círculo de NGL.
-         * - Se actualiza la lógica para que el círculo muestre el texto personalizado o se mantenga vacío si no se ingresa nada.
+         * - Se modifica el efecto de 'glow' para que se capture correctamente en la imagen descargada.
+         * - Se utiliza un pseudo-elemento para un 'glow' estático que es renderizado por html2canvas.
          */
         :root {
             --bg-color-dark: #1a1a1a;
@@ -22,6 +22,7 @@
             --btn-color: #3e66f0;
             --btn-hover-color: #3152c7;
             --glow-color: rgba(62, 102, 240, 0.5);
+            --glow-color-solid: #3e66f0;
         }
 
         body {
@@ -112,8 +113,28 @@
             transition: transform 0.3s ease-in-out;
         }
         
-        #nglCard.glowing {
-            box-shadow: 0 0 20px var(--glow-color), 0 0 40px var(--glow-color);
+        #nglCard.glowing::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background: linear-gradient(45deg, var(--glow-color-solid), transparent, transparent, var(--glow-color-solid));
+            filter: blur(8px);
+            z-index: -1;
+            opacity: 0.5;
+            border-radius: 20px;
+            animation: glow-effect 3s infinite alternate;
+        }
+
+        @keyframes glow-effect {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         #nglCard::before {
@@ -152,6 +173,10 @@
             font-weight: bold;
             font-size: 1.2em;
             color: #000;
+        }
+        
+        #cardTitle {
+            line-height: 1;
         }
 
         .ngl-user {
@@ -277,12 +302,12 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        // Version: 7
+        // Version: 8
         // Dependencias: html2canvas
         // Change Log:
-        // - Se añade la posibilidad de personalizar el texto dentro del círculo de la tarjeta.
-        // - Se integra la lógica para manejar los ID de prueba "mendez" y "mendez1".
-        // - Se mantiene la funcionalidad de personalización del avatar con localStorage.
+        // - Se modifica el efecto de 'glow' a un pseudo-elemento que es compatible con html2canvas para la descarga.
+        // - Se mantiene la funcionalidad de los ID de prueba "mendez" y "mendez1".
+        // - Se mantiene la personalización del avatar y el texto del círculo.
         
         const API_URL = '/api/greetings.js';
         const MESSAGE_ID_INPUT = document.getElementById('messageIdInput');
@@ -422,7 +447,6 @@
                 NGL_AVATAR.src = avatarSrc;
             }
             
-            // Actualizar el texto del círculo
             CARD_TITLE_SPAN.textContent = CARD_TITLE_INPUT.value.trim().toUpperCase() || '';
 
             NGL_CARD_CONTAINER.style.display = 'flex';
@@ -432,7 +456,8 @@
         DOWNLOAD_BTN.addEventListener('click', () => {
             html2canvas(NGL_CARD, {
                 useCORS: true,
-                backgroundColor: null 
+                backgroundColor: null,
+                scale: 2 // Esto ayuda a mejorar la calidad de la imagen final
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `ngl-message-${MESSAGE_ID_INPUT.value}.png`;
