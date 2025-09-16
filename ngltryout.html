@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador NGL - elmendez_2.0</title>
+    <style>
+        /* BOT Version: 1 */
+        /* Change Log:
+         * - Versión inicial del generador NGL.
+         */
+        :root {
+            --bg-color-dark: #1a1a1a;
+            --container-bg-dark: #222;
+            --card-bg-dark: #282828;
+            --text-color-dark: #e0e0e0;
+            --border-color-dark: #333;
+            --form-bg-dark: #333;
+            --accent-color: #3e66f0;
+            --signature-color: #555;
+            --btn-color: #3e66f0;
+            --btn-hover-color: #3152c7;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: var(--container-bg-dark);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color-dark);
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        #messageIdInput {
+            width: 80%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color-dark);
+            background-color: var(--card-bg-dark);
+            color: var(--text-color-dark);
+            box-sizing: border-box;
+            font-size: 1em;
+            text-align: center;
+        }
+
+        .main-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--btn-color);
+            color: #fff;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .main-btn:hover {
+            background-color: var(--btn-hover-color);
+            transform: translateY(-2px);
+        }
+
+        #nglCardContainer {
+            margin-top: 30px;
+            display: none; /* Oculto por defecto */
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        #nglCard {
+            width: 100%;
+            max-width: 350px;
+            padding: 25px;
+            border-radius: 16px;
+            background-image: linear-gradient(to bottom, #111, #333);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            color: #fff;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #nglCard::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            filter: blur(5px);
+            opacity: 0.1;
+            z-index: 0;
+        }
+        
+        #nglCard:hover {
+            transform: scale(1.02);
+        }
+
+        #nglCardContent {
+            position: relative;
+            z-index: 1;
+        }
+
+        .ngl-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #fff;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #000;
+        }
+
+        .ngl-user {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .ngl-user img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+            border: 2px solid #fff;
+        }
+
+        .ngl-user-info {
+            line-height: 1.2;
+        }
+
+        .ngl-username {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin: 0;
+        }
+
+        .ngl-message {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 1.1em;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Generador de Mensaje NGL 🖼️</h1>
+        <p>Crea una imagen del mensaje usando su ID.</p>
+        <div class="form-group">
+            <input type="text" id="messageIdInput" placeholder="Pega el ID del mensaje aquí">
+        </div>
+        <button id="generateBtn" class="main-btn">Generar Mensaje 🚀</button>
+        <button id="downloadBtn" class="main-btn" style="display: none; margin-top: 15px;">Descargar Imagen 💾</button>
+        <div id="nglCardContainer">
+            <div id="nglCard">
+                <div class="ngl-logo">NGL</div>
+                <div id="nglCardContent">
+                    <div class="ngl-user">
+                        <img id="nglAvatar" src="https://via.placeholder.com/50" alt="Avatar">
+                        <div class="ngl-user-info">
+                            <p class="ngl-username">elmendez_2.0</p>
+                            <small style="color: rgba(255,255,255,0.7);">¡Recibiste un mensaje anónimo! 💌</small>
+                        </div>
+                    </div>
+                    <div class="ngl-message">
+                        <p id="nglMessageText"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p style="text-align: center; margin-top: 30px; font-size: 0.8em; color: var(--signature-color);">Hecho con cariño por @elmendez_2.0</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        // Version: 1
+        // Dependencias: html2canvas
+        // Change Log:
+        // - Versión inicial, agrega la lógica para generar y descargar la tarjeta NGL.
+        
+        const API_URL = '/api/greetings.js';
+        const MESSAGE_ID_INPUT = document.getElementById('messageIdInput');
+        const GENERATE_BTN = document.getElementById('generateBtn');
+        const DOWNLOAD_BTN = document.getElementById('downloadBtn');
+        const NGL_CARD_CONTAINER = document.getElementById('nglCardContainer');
+        const NGL_MESSAGE_TEXT = document.getElementById('nglMessageText');
+        const NGL_AVATAR = document.getElementById('nglAvatar');
+
+        const DEFAULT_AVATAR = 'https://media.licdn.com/dms/image/D4E03AQE1gS0KxT4l0g/profile-displayphoto-shrink_800_800/0/1683457198755?e=2147483647&v=beta&t=U34x-m_U37r8yFfB3gS1oP8Qd7vLgC0D7zL6L2f3s4o';
+
+        async function fetchMessageById(id) {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error('No se pudieron obtener los saludos.');
+                }
+                const greetings = await response.json();
+                return greetings.find(g => g.id === id);
+            } catch (e) {
+                console.error('Error:', e);
+                return null;
+            }
+        }
+        
+        GENERATE_BTN.addEventListener('click', async () => {
+            const messageId = MESSAGE_ID_INPUT.value.trim();
+            if (!messageId) {
+                alert('Por favor, ingresa un ID de mensaje.');
+                return;
+            }
+
+            const message = await fetchMessageById(messageId);
+            
+            if (message) {
+                NGL_MESSAGE_TEXT.textContent = message.message;
+                NGL_AVATAR.src = DEFAULT_AVATAR;
+                NGL_CARD_CONTAINER.style.display = 'flex';
+                DOWNLOAD_BTN.style.display = 'block';
+            } else {
+                alert('No se encontró un mensaje con ese ID.');
+                NGL_CARD_CONTAINER.style.display = 'none';
+                DOWNLOAD_BTN.style.display = 'none';
+            }
+        });
+
+        DOWNLOAD_BTN.addEventListener('click', () => {
+            const card = document.getElementById('nglCard');
+            html2canvas(card, {
+                useCORS: true,
+                backgroundColor: null // Para un fondo transparente
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `ngl-message-${MESSAGE_ID_INPUT.value}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        });
+        
+    </script>
+</body>
+</html>
