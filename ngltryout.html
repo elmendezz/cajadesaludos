@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador NGL - elmendez_2.0</title>
     <style>
-        /* BOT Version: 11 */
+        /* BOT Version: 12 */
         /* HTML Changelog:
-         * - Se mejora la visibilidad del efecto 'glow'.
-         * - Se agrega el ícono de sueño (😴) en la esquina superior derecha.
-         * - Se actualiza el `box-shadow` para que el brillo sea más intenso y se exporte correctamente.
+         * - Se modifica la estructura para simular una historia de Instagram.
+         * - Se ajusta la relación de aspecto del contenedor principal a 9:16.
+         * - Se elimina el efecto 'glow'.
+         * - Se actualiza el código para centrar el contenido y exportar la historia completa.
          */
         :root {
             --bg-color-dark: #1a1a1a;
@@ -22,7 +23,6 @@
             --signature-color: #555;
             --btn-color: #3e66f0;
             --btn-hover-color: #3152c7;
-            --glow-color: rgba(62, 102, 240, 0.8); /* Glow más intenso */
         }
 
         body {
@@ -40,19 +40,32 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
-        .container {
+        .main-wrapper {
             width: 100%;
-            max-width: 500px;
-            background-color: var(--container-bg-dark);
+            max-width: 400px;
+            aspect-ratio: 9/16;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .container {
+            width: 90%;
+            background-color: transparent;
             border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 4px 60px rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color-dark);
+            box-shadow: none;
+            border: none;
             text-align: center;
         }
 
         h1 {
-            color: var(--accent-color);
+            color: var(--text-color-dark);
             margin-bottom: 20px;
         }
 
@@ -96,11 +109,11 @@
             flex-direction: column;
             align-items: center;
             position: relative;
+            width: 100%;
         }
         
         #nglCard {
             width: 100%;
-            max-width: 350px;
             padding: 25px;
             border-radius: 16px;
             background-image: linear-gradient(to bottom, #111, #333);
@@ -111,27 +124,6 @@
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: transform 0.3s ease-in-out;
-        }
-        
-        #nglCard.glowing {
-            box-shadow: 
-                0 0 15px 7px var(--glow-color), /* Más dispersión y tamaño */
-                0 0 30px 15px var(--glow-color), /* Segundo glow más grande */
-                inset 0 0 0 1px #1a1a1a;
-            border: 1px solid var(--accent-color);
-        }
-
-        #nglCard::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            filter: blur(5px);
-            opacity: 0.1;
-            z-index: 0;
         }
         
         #nglCard:hover {
@@ -163,7 +155,6 @@
             background-color: transparent;
             font-size: 2.5em;
         }
-
         
         #cardTitle {
             line-height: 1;
@@ -239,28 +230,50 @@
             object-fit: cover;
             display: none;
         }
+        
+        #bottom-text {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .main-ui {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Generador de Mensaje NGL   </h1>
-        <p>Crea una imagen del mensaje usando su ID.</p>
-        <div class="form-group">
-            <input type="text" id="messageIdInput" placeholder="Pega el ID del mensaje aquí">
+    <div class="main-wrapper" id="captureElement">
+        <div class="main-ui">
+            <div class="container">
+                <h1>Generador de Mensaje NGL</h1>
+                <p>Crea una imagen del mensaje usando su ID.</p>
+                <div class="form-group">
+                    <input type="text" id="messageIdInput" placeholder="Pega el ID del mensaje aquí">
+                </div>
+                
+                <div id="customOptionsContainer">
+                    <label for="imageInput">Avatar Anónimo Personalizado:</label>
+                    <input type="file" id="imageInput" accept="image/*">
+                    <img id="previewImage" alt="Vista previa del avatar personalizado">
+                    
+                    <label for="cardTitleInput">Texto del Círculo (NGL):</label>
+                    <input type="text" id="cardTitleInput" placeholder="Escribe tu texto, ej: MEZ">
+                </div>
+                
+                <button id="generateBtn" class="main-btn">Generar Mensaje</button>
+                <button id="downloadBtn" class="main-btn" style="display: none; margin-top: 15px;">Descargar Imagen</button>
+            </div>
         </div>
-        
-        <div id="customOptionsContainer">
-            <label for="imageInput">Avatar Anónimo Personalizado:</label>
-            <input type="file" id="imageInput" accept="image/*">
-            <img id="previewImage" alt="Vista previa del avatar personalizado">
-            
-            <label for="cardTitleInput">Texto del Círculo (NGL):</label>
-            <input type="text" id="cardTitleInput" placeholder="Escribe tu texto, ej: MEZ">
-        </div>
-        
-        <button id="generateBtn" class="main-btn">Generar Mensaje  </button>
-        <button id="downloadBtn" class="main-btn" style="display: none; margin-top: 15px;">Descargar Imagen  </button>
         
         <div id="nglCardContainer">
             <div id="nglCard">
@@ -283,20 +296,27 @@
                     </div>
                 </div>
             </div>
+            
+            <div id="bottom-text">
+                <p>NGL.LINK</p>
+                <p>anonymous q&a</p>
+            </div>
         </div>
+        
     </div>
-    
+
     <footer>
         <p style="text-align: center; margin-top: 30px; font-size: 0.8em; color: var(--signature-color);">Hecho con cariño por @elmendez_2.0</p>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        // Version: 11
+        // Version: 12
         // Dependencias: html2canvas
         // Change Log:
-        // - Se mejora la visibilidad del efecto 'glow'.
-        // - Se agrega el ícono de sueño (😴) en la esquina superior derecha.
+        // - Se modifica la estructura para simular una historia de Instagram.
+        // - Se ajusta la relación de aspecto del contenedor principal a 9:16.
+        // - Se elimina el efecto 'glow'.
         
         const API_URL = '/api/greetings.js';
         const MESSAGE_ID_INPUT = document.getElementById('messageIdInput');
@@ -314,11 +334,12 @@
         const CARD_TITLE_INPUT = document.getElementById('cardTitleInput');
         const CARD_TITLE_SPAN = document.getElementById('cardTitle');
         const NGL_LOGO_DIV = document.querySelector('.ngl-logo');
+        const MAIN_UI_DIV = document.querySelector('.main-ui');
+        const CAPTURE_ELEMENT = document.getElementById('captureElement');
 
         const ANONYMOUS_AVATAR = 'user.jpg';
         const GLOW_AVATAR = 'logo.jpg';
         
-        // Cargar la imagen personalizada desde localStorage si existe
         window.addEventListener('load', () => {
             const storedImage = localStorage.getItem('customAvatar');
             if (storedImage) {
@@ -391,7 +412,7 @@
                     name: '@elmendez_2.0',
                     message: '¡Prueba de mensaje exitosa! Todo está funcionando correctamente.  ',
                     timestamp: new Date().toISOString(),
-                    isGlowing: true,
+                    isGlowing: false, // Ahora no tiene glow
                     isSleep: true
                 };
                 updateCard(testMessage);
@@ -419,6 +440,7 @@
                 alert('No se encontró un mensaje con ese ID.');
                 NGL_CARD_CONTAINER.style.display = 'none';
                 DOWNLOAD_BTN.style.display = 'none';
+                MAIN_UI_DIV.style.display = 'flex';
             }
         });
 
@@ -431,31 +453,26 @@
             const customAvatar = localStorage.getItem('customAvatar');
             const avatarSrc = customAvatar ? customAvatar : ANONYMOUS_AVATAR;
 
-            if (message.isGlowing) {
-                NGL_CARD.classList.add('glowing');
-                NGL_AVATAR.src = GLOW_AVATAR;
-            } else {
-                NGL_CARD.classList.remove('glowing');
-                NGL_AVATAR.src = avatarSrc;
-            }
+            NGL_AVATAR.src = avatarSrc; // Ya no hay glow, el avatar siempre es el mismo
 
             if (message.isSleep) {
                 NGL_LOGO_DIV.classList.add('sleep');
                 CARD_TITLE_SPAN.textContent = '😴';
             } else {
                 NGL_LOGO_DIV.classList.remove('sleep');
-                CARD_TITLE_SPAN.textContent = CARD_TITLE_INPUT.value.trim().toUpperCase() || '';
+                CARD_TITLE_SPAN.textContent = CARD_TITLE_INPUT.value.trim().toUpperCase() || 'NGL';
             }
             
+            MAIN_UI_DIV.style.display = 'none';
             NGL_CARD_CONTAINER.style.display = 'flex';
             DOWNLOAD_BTN.style.display = 'block';
         }
 
         DOWNLOAD_BTN.addEventListener('click', () => {
-            html2canvas(NGL_CARD, {
+            html2canvas(CAPTURE_ELEMENT, {
                 useCORS: true,
                 backgroundColor: null,
-                scale: 3 // Esto mejora la calidad y la nitidez
+                scale: 3
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `ngl-message-${MESSAGE_ID_INPUT.value}.png`;
