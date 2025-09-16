@@ -433,7 +433,7 @@
             
             const clonedCard = NGL_CARD.cloneNode(true);
             clonedCard.style.maxWidth = 'unset';
-            clonedCard.style.width = '95%'; /* Aumenta el tamaño de la tarjeta */
+            clonedCard.style.width = '200%'; /* Aumenta el tamaño de la tarjeta */
             clonedCard.style.position = 'relative';
             clonedCard.style.top = 'unset';
             clonedCard.style.left = 'unset';
@@ -442,7 +442,7 @@
             html2canvas(tempContainer, {
                 useCORS: true,
                 backgroundColor: null,
-                scale: 10 // Aumenta la escala para una mayor resolución
+                scale: 5 // Aumenta la escala para una mayor resolución
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `ngl-message-${MESSAGE_ID_INPUT.value}.png`;
@@ -455,4 +455,5 @@
     </script>
 </body>
 </html>
+
 
