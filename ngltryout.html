@@ -7,9 +7,9 @@
     <style>
         /* BOT Version: 10 */
         /* HTML Changelog:
-         * - Optimización del efecto de 'glow' para que la exportación con html2canvas sea más consistente.
-         * - Se añadió un `inset` a la propiedad `box-shadow` para evitar bordes negros en el PNG final.
-         * - Se actualizó el `box-shadow` para que funcione mejor con el glow.
+         * - OptimizaciÃ³n del efecto de 'glow' para que la exportaciÃ³n con html2canvas sea mÃ¡s consistente.
+         * - Se aÃ±adiÃ³ un `inset` a la propiedad `box-shadow` para evitar bordes negros en el PNG final.
+         * - Se actualizÃ³ el `box-shadow` para que funcione mejor con el glow.
          */
         :root {
             --bg-color-dark: #1a1a1a;
@@ -113,7 +113,7 @@
             transition: transform 0.3s ease-in-out;
         }
         
-        /* Nuevo efecto de glow estático y robusto */
+        /* Nuevo efecto de glow estÃ¡tico y robusto */
         #nglCard.glowing {
             box-shadow: 
                 0 0 10px 5px var(--glow-color), 
@@ -242,15 +242,15 @@
         <h1>Generador de Mensaje NGL   </h1>
         <p>Crea una imagen del mensaje usando su ID.</p>
         <div class="form-group">
-            <input type="text" id="messageIdInput" placeholder="Pega el ID del mensaje aquí">
+            <input type="text" id="messageIdInput" placeholder="Pega el ID del mensaje aquÃ­">
         </div>
         
         <div id="customOptionsContainer">
-            <label for="imageInput">Avatar Anónimo Personalizado:</label>
+            <label for="imageInput">Avatar AnÃ³nimo Personalizado:</label>
             <input type="file" id="imageInput" accept="image/*">
             <img id="previewImage" alt="Vista previa del avatar personalizado">
             
-            <label for="cardTitleInput">Texto del Círculo (NGL):</label>
+            <label for="cardTitleInput">Texto del CÃ­rculo (NGL):</label>
             <input type="text" id="cardTitleInput" placeholder="Escribe tu texto, ej: MEZ">
         </div>
         
@@ -282,7 +282,7 @@
     </div>
     
     <footer>
-        <p style="text-align: center; margin-top: 30px; font-size: 0.8em; color: var(--signature-color);">Hecho con cariño por @elmendez_2.0</p>
+        <p style="text-align: center; margin-top: 30px; font-size: 0.8em; color: var(--signature-color);">Hecho con cariÃ±o por @elmendez_2.0</p>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -290,7 +290,7 @@
         // Version: 10
         // Dependencias: html2canvas
         // Change Log:
-        // - Se modifica el efecto de 'glow' para que la exportación con html2canvas sea más consistente.
+        // - Se modifica el efecto de 'glow' para que la exportaciÃ³n con html2canvas sea mÃ¡s consistente.
         // - Se eliminan los bordes negros agregando un 'inset box-shadow'.
         
         const API_URL = '/api/greetings.js';
@@ -383,7 +383,7 @@
                 const testMessage = {
                     id: 'test-id-123',
                     name: '@elmendez_2.0',
-                    message: '¡Prueba de mensaje exitosa! Todo está funcionando correctamente.  ',
+                    message: 'Â¡Prueba de mensaje exitosa! Todo estÃ¡ funcionando correctamente.  ',
                     timestamp: new Date().toISOString(),
                     isGlowing: true
                 };
@@ -395,7 +395,7 @@
                 const testMessage = {
                     id: 'test-id-456',
                     name: 'Usuario de Prueba',
-                    message: '¡Este es un mensaje de prueba para verificar que el sistema funciona bien!',
+                    message: 'Â¡Este es un mensaje de prueba para verificar que el sistema funciona bien!',
                     timestamp: new Date().toISOString(),
                     isGlowing: false
                 };
@@ -408,7 +408,7 @@
             if (message) {
                 updateCard(message);
             } else {
-                alert('No se encontró un mensaje con ese ID.');
+                alert('No se encontrÃ³ un mensaje con ese ID.');
                 NGL_CARD_CONTAINER.style.display = 'none';
                 DOWNLOAD_BTN.style.display = 'none';
             }
@@ -416,7 +416,7 @@
 
         function updateCard(message) {
             NGL_MESSAGE_TEXT.textContent = message.message;
-            NGL_USERNAME.textContent = message.name || 'Usuario Anónimo';
+            NGL_USERNAME.textContent = message.name || 'Usuario AnÃ³nimo';
             NGL_MESSAGE_ID.textContent = `ID: ${message.id}`;
             NGL_TIMESTAMP.textContent = formatTimestamp(message.timestamp);
 
@@ -452,4 +452,4 @@
         
     </script>
 </body>
-</html>
+    </html>
