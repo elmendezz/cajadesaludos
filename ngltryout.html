@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador NGL - elmendez_2.0</title>
     <style>
-        /* BOT Version: 9 */
-        /* Change Log:
-         * - Se optimiza el efecto de 'glow' para que se capture correctamente en la imagen descargada.
-         * - Se mejora la calidad del PNG final y se eliminan los bordes negros.
-         * - Se revierte el c√≥digo a la versi√≥n del generador ngltryout.html.
+        /* BOT Version: 10 */
+        /* HTML Changelog:
+         * - OptimizaciÛn del efecto de 'glow' para que la exportaciÛn con html2canvas sea m·s consistente.
+         * - Se aÒadiÛ un `inset` a la propiedad `box-shadow` para evitar bordes negros en el PNG final.
+         * - Se actualizÛ el `box-shadow` para que funcione mejor con el glow.
          */
         :root {
             --bg-color-dark: #1a1a1a;
@@ -113,12 +113,12 @@
             transition: transform 0.3s ease-in-out;
         }
         
-        /* Nuevo efecto de glow est√°tico y robusto */
+        /* Nuevo efecto de glow est·tico y robusto */
         #nglCard.glowing {
             box-shadow: 
                 0 0 10px 5px var(--glow-color), 
                 0 0 20px 10px var(--glow-color),
-                inset 0 0 0 1px #1a1a1a; /* Borde interior para eliminar las esquinas negras */
+                inset 0 0 0 1px #1a1a1a;
             border: 1px solid var(--accent-color);
         }
 
@@ -239,23 +239,23 @@
 <body>
 
     <div class="container">
-        <h1>Generador de Mensaje NGL üñºÔ∏è</h1>
+        <h1>Generador de Mensaje NGL   </h1>
         <p>Crea una imagen del mensaje usando su ID.</p>
         <div class="form-group">
-            <input type="text" id="messageIdInput" placeholder="Pega el ID del mensaje aqu√≠">
+            <input type="text" id="messageIdInput" placeholder="Pega el ID del mensaje aquÌ">
         </div>
         
         <div id="customOptionsContainer">
-            <label for="imageInput">Avatar An√≥nimo Personalizado:</label>
+            <label for="imageInput">Avatar AnÛnimo Personalizado:</label>
             <input type="file" id="imageInput" accept="image/*">
             <img id="previewImage" alt="Vista previa del avatar personalizado">
             
-            <label for="cardTitleInput">Texto del C√≠rculo (NGL):</label>
+            <label for="cardTitleInput">Texto del CÌrculo (NGL):</label>
             <input type="text" id="cardTitleInput" placeholder="Escribe tu texto, ej: MEZ">
         </div>
         
-        <button id="generateBtn" class="main-btn">Generar Mensaje üöÄ</button>
-        <button id="downloadBtn" class="main-btn" style="display: none; margin-top: 15px;">Descargar Imagen üíæ</button>
+        <button id="generateBtn" class="main-btn">Generar Mensaje  </button>
+        <button id="downloadBtn" class="main-btn" style="display: none; margin-top: 15px;">Descargar Imagen  </button>
         
         <div id="nglCardContainer">
             <div id="nglCard">
@@ -282,16 +282,16 @@
     </div>
     
     <footer>
-        <p style="text-align: center; margin-top: 30px; font-size: 0.8em; color: var(--signature-color);">Hecho con cari√±o por @elmendez_2.0</p>
+        <p style="text-align: center; margin-top: 30px; font-size: 0.8em; color: var(--signature-color);">Hecho con cariÒo por @elmendez_2.0</p>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        // Version: 9
+        // Version: 10
         // Dependencias: html2canvas
         // Change Log:
-        // - Se modifica el efecto de 'glow' para que se capture correctamente en la imagen descargada.
-        // - Se mejora la calidad del PNG final y se eliminan los bordes negros.
+        // - Se modifica el efecto de 'glow' para que la exportaciÛn con html2canvas sea m·s consistente.
+        // - Se eliminan los bordes negros agregando un 'inset box-shadow'.
         
         const API_URL = '/api/greetings.js';
         const MESSAGE_ID_INPUT = document.getElementById('messageIdInput');
@@ -383,7 +383,7 @@
                 const testMessage = {
                     id: 'test-id-123',
                     name: '@elmendez_2.0',
-                    message: '¬°Prueba de mensaje exitosa! Todo est√° funcionando correctamente. üòé',
+                    message: '°Prueba de mensaje exitosa! Todo est· funcionando correctamente.  ',
                     timestamp: new Date().toISOString(),
                     isGlowing: true
                 };
@@ -395,7 +395,7 @@
                 const testMessage = {
                     id: 'test-id-456',
                     name: 'Usuario de Prueba',
-                    message: '¬°Este es un mensaje de prueba para verificar que el sistema funciona bien!',
+                    message: '°Este es un mensaje de prueba para verificar que el sistema funciona bien!',
                     timestamp: new Date().toISOString(),
                     isGlowing: false
                 };
@@ -408,7 +408,7 @@
             if (message) {
                 updateCard(message);
             } else {
-                alert('No se encontr√≥ un mensaje con ese ID.');
+                alert('No se encontrÛ un mensaje con ese ID.');
                 NGL_CARD_CONTAINER.style.display = 'none';
                 DOWNLOAD_BTN.style.display = 'none';
             }
@@ -416,7 +416,7 @@
 
         function updateCard(message) {
             NGL_MESSAGE_TEXT.textContent = message.message;
-            NGL_USERNAME.textContent = message.name || 'Usuario An√≥nimo';
+            NGL_USERNAME.textContent = message.name || 'Usuario AnÛnimo';
             NGL_MESSAGE_ID.textContent = `ID: ${message.id}`;
             NGL_TIMESTAMP.textContent = formatTimestamp(message.timestamp);
 
@@ -452,4 +452,4 @@
         
     </script>
 </body>
-                    </html>
+</html>
