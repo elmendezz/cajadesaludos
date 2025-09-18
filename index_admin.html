@@ -5,10 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - elmendez</title>
     <style>
-        /* Version: 14 */
+        /* BOT Version: 17 */
         /* Change Log:
-         * - Se corrige el error de superposición del botón del menú de hamburguesa.
-         * - Se añade un padding superior al body para dar espacio al menú fijo y evitar que la página se vea "cortada".
+         * - Se añade un botón para "Responder" en cada tarjeta de saludo.
+         * - Se añade el modal y el formulario para que el administrador pueda enviar respuestas.
+         * - Se actualiza el código para manejar la nueva acción "reply" en el admin.js.
+         * - Se ajusta la posición del body y el .hamburger-menu para que no se superpongan en la página de administración.
+         * - Se añade el estilo para el modal de respuesta del administrador.
+         * - Se ajusta el estilo de los botones para que el de respuesta tenga un color diferente.
+         * - Se agrega una clase 'modal-open' al body para deshabilitar el scroll de la página principal cuando el modal está activo.
          */
         :root {
             --bg-color-dark: #1a1a1a;
@@ -18,331 +23,449 @@
             --border-color-dark: #333;
             --form-bg-dark: #333;
             --accent-color: #3e66f0;
+            --reply-btn-color: #58a6ff;
             --glow-color: rgba(62, 102, 240, 0.5);
             --shadow-color: rgba(0, 0, 0, 0.3);
             --pulse-glow-start: rgba(62, 102, 240, 0.5);
             --pulse-glow-end: rgba(62, 102, 240, 1.0);
-            --signature-color: #555;
-            --like-color: #f03e3e;
-            --like-icon-color: #e0e0e0;
+            --light-bg-color: #f0f2f5;
+            --light-container-bg: #fff;
+            --light-card-bg: #f8f9fa;
+            --light-text-color: #1a1a1a;
+            --light-border-color: #e0e0e0;
+            --light-form-bg: #fff;
         }
 
-        /* Tema Claro */
-        body.light-mode {
-            --bg-color-dark: #f0f2f5;
-            --container-bg-dark: #fff;
-            --card-bg-dark: #f9f9f9;
-            --text-color-dark: #333;
-            --border-color-dark: #ddd;
-            --form-bg-dark: #eee;
-            --glow-color: rgba(62, 102, 240, 0.2);
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --pulse-glow-start: rgba(62, 102, 240, 0.2);
-            --pulse-glow-end: rgba(62, 102, 240, 0.5);
-            --signature-color: #bbb;
-            --like-color: #f03e3e;
-            --like-icon-color: #777;
-        }
-
-        /* EMOJIS PERSONALIZADOS */
-        @font-face {
-            font-family: 'NotoColorEmoji';
-            src: url('./NotoColorEmoji.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        
-        body.emojis-disabled .like-icon {
-            font-family: sans-serif !important;
-        }
-        
-        .like-icon {
-            font-family: 'NotoColorEmoji', sans-serif;
-        }
-
-        /* ESTILOS DEL USUARIO ORIGINALES Y AÑADIDOS */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg-color-dark);
             color: var(--text-color-dark);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
             margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-            background-image: radial-gradient(circle, rgba(62, 102, 240, 0.1) 1px, transparent 1px);
-            background-size: 20px 20px;
+            padding: 0;
             transition: background-color 0.3s, color 0.3s;
-            position: relative;
-            padding-top: 60px; /* Se añade padding superior para el menú fijo */
+            overflow-x: hidden;
         }
-        
-        body.menu-open {
+
+        body.modal-open {
             overflow: hidden;
         }
 
+        /* Light Mode */
+        body.light-mode {
+            background-color: var(--light-bg-color);
+            color: var(--light-text-color);
+        }
+
+        body.light-mode main {
+            background-color: var(--light-bg-color);
+            color: var(--light-text-color);
+        }
+
+        body.light-mode .container {
+            background-color: var(--light-container-bg);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode .card {
+            background-color: var(--light-card-bg);
+            border: 1px solid var(--light-border-color);
+        }
+
+        body.light-mode form {
+            background-color: var(--light-form-bg);
+            border: 1px solid var(--light-border-color);
+        }
+
+        body.light-mode input,
+        body.light-mode textarea {
+            background-color: var(--light-bg-color);
+            color: var(--light-text-color);
+            border: 1px solid var(--light-border-color);
+        }
+
+        body.light-mode input:focus,
+        body.light-mode textarea:focus {
+            border-color: var(--accent-color);
+        }
+
+        body.light-mode button {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        body.light-mode .toggle-container {
+            background-color: var(--light-border-color);
+        }
+
+        body.light-mode .toggle-container .toggle-ball {
+            background-color: var(--text-color-dark);
+        }
+
+        body.light-mode .menu-btn {
+            background-color: var(--light-container-bg);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--light-border-color);
+        }
+
+        body.light-mode .menu-btn span {
+            background-color: var(--light-text-color);
+        }
+
+        body.light-mode .sidebar {
+            background-color: var(--light-container-bg);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode .sidebar .menu-item:hover {
+            background-color: var(--light-border-color);
+        }
+
+        body.light-mode .sidebar .social-icon {
+            filter: invert(0);
+        }
+
+        body.light-mode .modal-content {
+            background-color: var(--light-container-bg);
+            color: var(--light-text-color);
+        }
+
+        body.light-mode .modal-content .close-btn {
+            color: var(--light-text-color);
+        }
+
+        /* General styles */
         .container {
-            width: 100%;
-            max-width: 700px;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
             background-color: var(--container-bg-dark);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 4px 60px var(--shadow-color);
-            border: 1px solid var(--border-color-dark);
-            animation: fadeIn 1s ease-in-out;
-            display: none; /* Oculto por defecto hasta ingresar el PIN */
-            margin-top: 0; /* Se elimina el margen superior */
+            border-radius: 12px;
+            box-shadow: 0 4px 20px var(--shadow-color);
+            transition: background-color 0.3s;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        header {
+        h1 {
             text-align: center;
             margin-bottom: 20px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-container {
             position: relative;
+            flex-grow: 1;
+            max-width: 300px;
         }
 
-        header h1 {
-            font-size: 2.5em;
-            color: var(--accent-color);
-            margin: 0;
-            text-shadow: 0 0 10px var(--glow-color);
-        }
-        
-        .form-section, .greetings-section {
-            background-color: var(--card-bg-dark);
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border-color-dark);
-        }
-
-        .form-section h2, .greetings-section h2 {
-            color: var(--accent-color);
-            font-size: 1.5em;
-            margin-top: 0;
-            border-bottom: 2px solid var(--accent-color);
-            padding-bottom: 5px;
-        }
-
-        input[type="text"], textarea {
+        #search-input {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            background-color: var(--form-bg-dark);
-            border: 1px solid var(--border-color-dark);
-            color: var(--text-color-dark);
+            padding: 12px 15px;
             border-radius: 8px;
-            font-size: 1em;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
+            border: 1px solid var(--border-color-dark);
+            background-color: var(--form-bg-dark);
+            color: var(--text-color-dark);
+            font-size: 16px;
+            transition: border-color 0.3s;
         }
 
-        input[type="text"]:focus, textarea:focus {
+        #search-input:focus {
             outline: none;
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px var(--glow-color);
         }
 
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--accent-color);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+        #search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            filter: invert(1);
         }
 
-        button:hover {
-            background-color: #2a4ac8;
-            transform: translateY(-2px);
+        body.light-mode #search-icon {
+            filter: invert(0);
         }
-        
-        .greetings-section {
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg-dark);
             padding: 20px;
-        }
-
-        #greetingsContainer {
-            margin-top: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color-dark);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+            position: relative;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            justify-content: space-between;
         }
 
-        .greeting-card {
-            background-color: var(--form-bg-dark);
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 5px solid var(--accent-color);
-            transition: transform 0.2s ease;
-            position: relative;
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px var(--shadow-color);
         }
 
-        .greeting-card:hover {
-            transform: scale(1.01);
-        }
-        
-        .greeting-card.glowing {
-            background-color: rgba(62, 102, 240, 0.1);
-            border-color: var(--accent-color);
-            box-shadow: 0 0 15px var(--glow-color);
-            animation: pulse-glow 2s infinite alternate;
-        }
-        
-        @keyframes pulse-glow {
-            from { box-shadow: 0 0 10px var(--pulse-glow-start); }
-            to { box-shadow: 0 0 20px var(--pulse-glow-end); }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
         }
 
-        .greeting-card p {
-            margin: 0;
-            font-size: 0.95em;
-        }
-
-        .greeting-card .author {
+        .card-header .name {
             font-weight: bold;
-            color: #fff;
-            margin-bottom: 5px;
+            font-size: 1.1em;
         }
 
-        .greeting-card .timestamp {
-            font-size: 0.75em;
-            color: var(--signature-color);
-            text-align: right;
+        .card-header .timestamp {
+            font-size: 0.8em;
+            color: #888;
+        }
+
+        .card p {
+            margin-top: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            flex-grow: 1;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-top: 10px;
         }
 
-        .greeting-card .message-id {
-            font-size: 0.6em;
-            color: #555;
-            text-align: left;
-            margin-top: 5px;
-        }
-        
-        .signature-message {
-            font-size: 0.7em;
-            color: var(--signature-color);
-            text-align: right;
-            margin-top: 5px;
-        }
-
-        .admin-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+        .like-container {
             display: flex;
+            align-items: center;
             gap: 5px;
         }
 
-        .admin-controls button {
-            width: auto;
-            padding: 5px 10px;
-            font-size: 0.7em;
-            border-radius: 5px;
-            background-color: #444;
-        }
-        
-        .admin-controls .delete-btn {
-            background-color: #f03e3e;
-        }
-        .admin-controls .delete-btn:hover {
-            background-color: #d12a2a;
-        }
-        .admin-controls .edit-btn {
-            background-color: #3e66f0;
-        }
-        .admin-controls .edit-btn:hover {
-            background-color: #2a4ac8;
-        }
-        .admin-controls .toggle-glow-btn {
-            background-color: #f0c53e;
-        }
-        .admin-controls .toggle-glow-btn:hover {
-            background-color: #c8a32a;
+        .like-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
         }
 
-        /* ESTILOS DEL MENÚ DE HAMBURGUESA */
+        .like-btn img {
+            width: 20px;
+            height: 20px;
+            filter: invert(1);
+            transition: transform 0.2s;
+        }
+
+        .like-btn img:hover {
+            transform: scale(1.1);
+        }
+
+        .card-footer .actions {
+            display: flex;
+            gap: 10px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .card-footer .actions button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .card-footer .actions button:hover {
+            background-color: var(--reply-btn-color);
+        }
+        
+        .card-footer .actions button.reply-btn {
+            background-color: var(--reply-btn-color);
+        }
+
+        .card-footer .actions button.reply-btn:hover {
+            background-color: #4a90e2;
+        }
+
+        .card-footer .actions button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 5px var(--pulse-glow-start), 0 0 10px var(--pulse-glow-start), 0 0 15px var(--pulse-glow-start);
+            }
+            50% {
+                box-shadow: 0 0 10px var(--pulse-glow-end), 0 0 20px var(--pulse-glow-end), 0 0 30px var(--pulse-glow-end);
+            }
+            100% {
+                box-shadow: 0 0 5px var(--pulse-glow-start), 0 0 10px var(--pulse-glow-start), 0 0 15px var(--pulse-glow-start);
+            }
+        }
+
+        .glowing-card {
+            animation: pulse-glow 2s infinite;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            background-color: var(--card-bg-dark);
+            color: var(--text-color-dark);
+            border: 1px solid var(--border-color-dark);
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .filter-btn:hover {
+            background-color: var(--form-bg-dark);
+        }
+
+        .filter-btn.active {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .filter-btn.active:hover {
+            background-color: var(--accent-color);
+        }
+
+        /* Menú y Sidebar */
         .hamburger-menu {
             position: fixed;
             top: 20px;
             left: 20px;
             width: 40px;
             height: 40px;
-            background: var(--card-bg-dark);
-            border: 1px solid var(--border-color-dark);
+            background-color: var(--container-bg-dark);
             border-radius: 50%;
-            cursor: pointer;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
-            transition: all 0.3s ease;
-            z-index: 100;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            z-index: 1001;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s, background-color 0.3s;
         }
 
-        .hamburger-menu:hover {
-            transform: scale(1.1);
-        }
-
-        .hamburger-icon, .hamburger-icon::before, .hamburger-icon::after {
-            width: 20px;
-            height: 2px;
+        .hamburger-menu span {
+            width: 25px;
+            height: 3px;
             background-color: var(--text-color-dark);
+            border-radius: 2px;
             transition: all 0.3s ease;
         }
-
-        .hamburger-icon::before, .hamburger-icon::after {
-            content: '';
-            position: absolute;
-        }
-
-        .hamburger-icon::before {
-            transform: translateY(-6px);
-        }
-
-        .hamburger-icon::after {
-            transform: translateY(6px);
-        }
         
-        .hamburger-menu.open .hamburger-icon {
-            transform: rotate(45deg);
-            background-color: transparent;
+        body.light-mode .hamburger-menu span {
+            background-color: var(--light-text-color);
         }
 
-        .hamburger-menu.open .hamburger-icon::before {
-            transform: rotate(90deg) translate(6px);
+        .hamburger-menu.open span:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
         }
 
-        .hamburger-menu.open .hamburger-icon::after {
-            transform: rotate(90deg) translate(-6px);
+        .hamburger-menu.open span:nth-child(2) {
+            opacity: 0;
         }
-        
+
+        .hamburger-menu.open span:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
         .sidebar {
             position: fixed;
             top: 0;
             left: -300px;
-            width: 280px;
+            width: 250px;
             height: 100%;
             background-color: var(--container-bg-dark);
-            border-right: 1px solid var(--border-color-dark);
-            z-index: 99;
+            padding: 60px 20px 20px 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
             transition: left 0.3s ease;
-            padding: 20px;
-            box-sizing: border-box;
-            box-shadow: 2px 0 10px var(--shadow-color);
-            overflow-y: auto;
+            z-index: 1000;
         }
 
         .sidebar.open {
             left: 0;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .menu-item:hover {
+            background-color: var(--card-bg-dark);
+        }
+
+        .menu-item a {
+            color: var(--text-color-dark);
+            text-decoration: none;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .menu-item img {
+            width: 24px;
+            height: 24px;
+            filter: invert(1);
+        }
+
+        body.light-mode .menu-item img {
+            filter: invert(0);
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .social-icon {
+            width: 30px;
+            height: 30px;
+            filter: invert(1);
+            transition: transform 0.2s;
+        }
+
+        .social-icon:hover {
+            transform: scale(1.1);
         }
 
         .overlay {
@@ -351,11 +474,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 98;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            transition: opacity 0.3s, visibility 0.3s;
         }
 
         .overlay.open {
@@ -363,342 +486,509 @@
             visibility: visible;
         }
 
-        .sidebar h3 {
-            color: var(--accent-color);
-            margin-bottom: 15px;
-            border-bottom: 2px solid var(--accent-color);
-            padding-bottom: 5px;
-        }
-        
-        .version-log {
-            font-size: 0.9em;
-            color: var(--text-color-dark);
+        .admin-options {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
         }
 
-        .version-log h4 {
-            margin-top: 15px;
-            margin-bottom: 5px;
-            color: var(--signature-color);
+        .admin-options h3 {
+            margin: 0;
+            font-size: 1em;
         }
 
-        .version-log ul {
+        .toggle-container {
+            width: 50px;
+            height: 25px;
+            background-color: var(--border-color-dark);
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-container .toggle-ball {
+            width: 21px;
+            height: 21px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        .toggle-container.active {
+            background-color: var(--accent-color);
+        }
+
+        .toggle-container.active .toggle-ball {
+            transform: translateX(25px);
+        }
+
+        /* Changelog */
+        .changelog {
+            background-color: var(--card-bg-dark);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .changelog h2 {
+            margin-top: 0;
+        }
+
+        .changelog-content {
+            max-height: 150px;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+
+        .changelog-content.expanded {
+            max-height: none;
+        }
+
+        .changelog-content ul {
+            list-style-type: disc;
             padding-left: 20px;
             margin: 0;
         }
-        
+
+        .changelog-content li {
+            margin-bottom: 5px;
+        }
+
         .expand-btn {
-            display: block;
-            width: 100%;
-            background: var(--card-bg-dark);
-            border: 1px solid var(--border-color-dark);
-            color: var(--text-color-dark);
-            padding: 8px;
-            margin-top: 10px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
             cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            margin-top: 10px;
+            display: block;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .expand-btn:hover {
-            background: var(--accent-color);
-            color: #fff;
-            transform: translateY(-2px);
+        /* Modal Styles */
+        .modal {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            z-index: 1002;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            transition: opacity 0.3s ease;
+            opacity: 1;
         }
 
-        #changelog-content {
-            max-height: 150px;
-            overflow: hidden;
-            transition: max-height 0.5s ease-in-out;
+        .modal.hidden {
+            display: none;
         }
         
-        #changelog-content.expanded {
-            max-height: 1000px;
-        }
-        
-        .menu-btn {
-            display: block;
-            width: 100%;
-            background: var(--card-bg-dark);
-            border: 1px solid var(--border-color-dark);
-            color: var(--text-color-dark);
-            padding: 8px;
-            margin-top: 10px;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+        .modal-content {
+            background-color: var(--container-bg-dark);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            animation: slideIn 0.4s ease-out;
         }
 
-        .menu-btn:hover {
-            background: var(--accent-color);
-            color: #fff;
-            transform: translateY(-2px);
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
         }
+
+        .modal-content .close-btn {
+            color: #aaa;
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .modal-content .close-btn:hover,
+        .modal-content .close-btn:focus {
+            color: white;
+        }
+
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-container textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color-dark);
+            background-color: var(--form-bg-dark);
+            color: var(--text-color-dark);
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 100px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-container textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .send-btn {
+            background-color: var(--reply-btn-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .send-btn:hover {
+            background-color: #4a90e2;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
     </style>
 </head>
 <body>
-	<div id="replyModal" class="modal hidden">
-    <div class="modal-content">
-        <span class="close-btn">&times;</span>
-        <h2>Responder a Saludo</h2>
-        <form id="replyForm" class="form-container">
-            <input type="hidden" id="replyIdInput">
-            <div class="form-group">
-                <label for="replyMessageInput">Tu Respuesta:</label>
-                <textarea id="replyMessageInput" placeholder="Escribe tu respuesta aquí..." required></textarea>
-            </div>
-            <button type="submit" class="send-btn">Enviar Respuesta</button>
-        </form>
+    <div class="hamburger-menu" id="hamburger-menu">
+        <span></span>
+        <span></span>
+        <span></span>
     </div>
-    <div class="hamburger-menu" id="hamburgerMenu">
-        <div class="hamburger-icon"></div>
-    </div>
-    
-    <div class="sidebar" id="sidebar">
-        <h3>Menú</h3>
-        <button id="themeToggle" class="menu-btn">☀️ Cambiar Tema</button>
-        <button id="emojiToggle" class="menu-btn">Activar/Desactivar Emojis</button>
-        <a href="/" class="menu-btn" style="color: var(--accent-color);">Cajita de Saludos</a>
-        
-        <div class="version-log">
-            <h4>Historial de Cambios</h4>
-            <div id="changelog-content">
-                <p><b>v14</b> - Se corrige el error de superposición del botón del menú de hamburguesa. Se añade un padding superior al body para dar espacio al menú fijo y evitar que la página se vea "cortada".</p>
-                <p><b>v13</b> - Se corrige el error en la superposición del botón del menú de hamburguesa. Se reajusta el margen superior del contenedor principal para evitar que el botón lo oculte.</p>
-                <p><b>v12</b> - Se mueven los botones de tema y emojis al menú de hamburguesa. Se añade la lógica de un "toggle" para los emojis. Se actualiza el script para mantener las funciones de administración y añadir las del menú.</p>
-                <p><b>v11</b> - Se corrige el error al pasar el código y solo se aplica el estilo de index.html a index_admin.html. Se actualiza el script para mantener las funciones de administración y añadir las del menú.</p>
-                <p><b>v10</b> - Se corrige el error de diseño y se copia el código completo de index.html a index_admin.html para mantener el estilo consistente.</p>
-                <p><b>v9</b> - Se corrige el error de diseño y se añade el menú de hamburguesa con historial de cambios y función de expandir.</p>
-                <p><b>v8</b> - Se revierte el diseño para mantener el original, con emojis personalizados.</p>
-                <p><b>v7</b> - Se cambia la fuente de emojis al formato .ttf local.</p>
-                <p><b>v6</b> - Se mejora el diseño para que coincida con el tema oscuro de @elmendez_2.0.</p>
-                <p><b>v5</b> - Se agrega la funcionalidad de likes y unlikes a los mensajes.</p>
-                <p><b>v4</b> - Se añade un sistema de filtrado de mensajes y búsqueda.</p>
-                <p><b>v3</b> - Se implementa un panel de administración con PIN.</p>
-                <p><b>v2</b> - Se añade el botón de modo oscuro/claro.</p>
-                <p><b>v1</b> - Versión inicial con la caja de saludos.</p>
-            </div>
-            <button id="expand-btn" class="expand-btn">Expandir</button>
-        </div>
-    </div>
-    
     <div class="overlay" id="overlay"></div>
-    
-    <div class="container">
-        <header>
+    <aside class="sidebar" id="sidebar">
+        <h2>Menú</h2>
+        <div class="menu-item">
+            <img src="https://img.icons8.com/material-outlined/24/ffffff/home--v2.png" alt="home icon">
+            <a href="/">Ir a la página principal</a>
+        </div>
+        <div class="menu-item">
+            <img src="https://img.icons8.com/material-outlined/24/ffffff/wrench.png" alt="admin icon">
+            <a href="/admin">Panel de Administración</a>
+        </div>
+        <div class="social-icons">
+            <a href="https://github.com/elmendezdev" target="_blank">
+                <img class="social-icon" src="https://img.icons8.com/material-outlined/24/ffffff/github.png" alt="GitHub">
+            </a>
+            <a href="https://twitter.com/elmendezdev" target="_blank">
+                <img class="social-icon" src="https://img.icons8.com/material-outlined/24/ffffff/twitter-squared.png" alt="Twitter">
+            </a>
+            <a href="https://instagram.com/elmendez_2.0" target="_blank">
+                <img class="social-icon" src="https://img.icons8.com/material-outlined/24/ffffff/instagram-new--v2.png" alt="Instagram">
+            </a>
+        </div>
+    </aside>
+
+    <main>
+        <div class="container">
             <h1>Panel de Administración</h1>
-        </header>
 
-        <section class="form-section">
-            <h2>Escribe un mensaje como Admin</h2>
-            <input type="text" id="nameInput" value="@elmendez_2.0" disabled>
-            <textarea id="messageInput" placeholder="Tu mensaje..." rows="4" required></textarea>
-            <button id="submitBtn">Enviar mensaje</button>
-        </section>
-
-        <section class="greetings-section">
-            <h2>Saludos de la comunidad</h2>
-            <div id="greetingsContainer">
+            <div class="actions">
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Buscar por nombre, mensaje o ID...">
+                    <img id="search-icon" src="https://img.icons8.com/material-outlined/24/ffffff/search--v1.png" alt="Search Icon">
+                </div>
             </div>
-        </section>
-    </div>
+
+            <div class="filter-controls">
+                <button class="filter-btn active" data-filter="all">Todos</button>
+                <button class="filter-btn" data-filter="replied">Respondidos</button>
+                <button class="filter-btn" data-filter="pending">Pendientes</button>
+            </div>
+
+            <div class="admin-options">
+                <h3>Emojis</h3>
+                <div class="toggle-container" id="emojis-toggle">
+                    <div class="toggle-ball"></div>
+                </div>
+                <h3>Tema</h3>
+                <div class="toggle-container" id="theme-toggle">
+                    <div class="toggle-ball"></div>
+                </div>
+            </div>
+
+            <div id="greetings-list" class="card-grid">
+                </div>
+            
+            <div class="changelog">
+                <h2>Changelog</h2>
+                <div class="changelog-content" id="changelog-content">
+                    <ul>
+                        <li>Se agrega el panel de administración.</li>
+                        <li>Se implementa la funcionalidad de like/unlike.</li>
+                        <li>Se añaden opciones de accesibilidad (emojis y tema).</li>
+                        <li>Se añade un botón para "Responder" a cada saludo.</li>
+                        <li>Se añade el modal de respuesta del administrador.</li>
+                        <li>Se implementa la lógica para que el administrador envíe respuestas a los saludos.</li>
+                        <li>Se añade la funcionalidad de filtrar mensajes por "Respondidos" y "Pendientes".</li>
+                        <li>Se mejora la estética del panel de administración para una mejor experiencia de usuario.</li>
+                    </ul>
+                </div>
+                <button id="expand-btn" class="expand-btn">Expandir</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        // BOT Version: 14
+        // BOT Version: 17
         // Change Log:
-        // - Se corrige el error de superposición del botón del menú de hamburguesa.
-        // - Se añade un padding superior al body para dar espacio al menú fijo y evitar que la página se vea "cortada".
-        
-        const ADMIN_PIN = '26435';
-        const CONTAINER = document.querySelector('.container');
-        const NAME_INPUT = document.getElementById('nameInput');
-        const MESSAGE_INPUT = document.getElementById('messageInput');
-        const SUBMIT_BTN = document.getElementById('submitBtn');
-        const GREETINGS_CONTAINER = document.getElementById('greetingsContainer');
-        const THEME_TOGGLE = document.getElementById('themeToggle');
-        const EMOJI_TOGGLE = document.getElementById('emojiToggle');
-        
-        const HAMBURGER_MENU = document.getElementById('hamburgerMenu');
-        const SIDEBAR = document.getElementById('sidebar');
-        const OVERLAY = document.getElementById('overlay');
-        const CHANGELOG_CONTENT = document.getElementById('changelog-content');
-        const EXPAND_BTN = document.getElementById('expand-btn');
-        
-        window.onload = function() {
-            const pin = prompt('Ingresa el PIN de administrador para acceder:');
-            if (pin === ADMIN_PIN) {
-                CONTAINER.style.display = 'block';
-                fetchGreetings();
-                setInterval(fetchGreetings, 10000); 
-                const savedTheme = localStorage.getItem('theme');
-                if (savedTheme === 'light') {
-                    document.body.classList.add('light-mode');
-                    THEME_TOGGLE.textContent = '🌙 Cambiar Tema';
-                } else {
-                    THEME_TOGGLE.textContent = '☀️ Cambiar Tema';
-                }
-                
-                const emojisDisabled = localStorage.getItem('emojis-disabled');
-                if (emojisDisabled === 'true') {
-                    document.body.classList.add('emojis-disabled');
-                }
-            } else {
-                alert('PIN incorrecto. Acceso denegado.');
-                window.location.href = '/';
-            }
-        };
+        // - Se añade la lógica para abrir y cerrar el modal de respuesta.
+        // - Se maneja la visualización y ocultación del modal y el overlay.
+        // - Se asegura de que el ID del saludo se pase al formulario del modal.
+        // - Se integra el código para manejar el envío del formulario de respuesta a la API.
+        // - Se añade una función `fetchGreetings` para recargar la lista de saludos después de enviar una respuesta.
+        // - Se añaden los listeners para los botones de respuesta que abren el modal.
+        // - Se añade la lógica de filtrado por estado de respuesta ("Respondidos" y "Pendientes").
 
-        async function apiRequest(endpoint, method, data = null) {
-            const options = {
-                method,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            };
-
-            if (data) {
-                options.body = JSON.stringify(data);
-            }
-
-            try {
-                const response = await fetch(endpoint, options);
-                
-                if (!response.ok) {
-                    const errorData = await response.text();
-                    throw new Error(errorData || `Error del servidor: ${response.status} ${response.statusText}`);
-                }
-
-                return await response.json();
-            } catch (e) {
-                console.error(`Error en la solicitud a ${endpoint}:`, e);
-                alert(`Ocurrió un error: ${e.message}`);
-                throw e;
-            }
-        }
+        let allGreetings = [];
 
         async function fetchGreetings() {
             try {
-                const greetings = await apiRequest('/api/greetings', 'GET');
-                renderGreetings(greetings);
+                const response = await fetch('/api/greetings');
+                const data = await response.json();
+                allGreetings = data.greetings || [];
+                filterAndRenderGreetings();
             } catch (e) {
-                // El alert ya está en apiRequest, no es necesario repetirlo
+                console.error('Error fetching greetings:', e);
             }
         }
 
-        async function addGreeting(name, message) {
-            try {
-                await apiRequest('/api/greetings', 'POST', { name, message });
-                
-                MESSAGE_INPUT.value = '';
-                fetchGreetings();
-            } catch (e) {
-                // El alert ya está en apiRequest, no es necesario repetirlo
-            }
-        }
-        
-        async function runAdminAction(action, id = null, data = {}) {
-            try {
-                await apiRequest('/api/admin', 'POST', { action, id, ...data });
-                fetchGreetings();
-            } catch (e) {
-                // El alert ya está en apiRequest, no es necesario repetirlo
-            }
-        }
+        function renderGreetings(greetingsToRender) {
+            const greetingsList = document.getElementById('greetings-list');
+            greetingsList.innerHTML = '';
+            greetingsToRender.forEach(greeting => {
+                const isReplied = greeting.replies && greeting.replies.length > 0;
+                const cardClass = isReplied ? 'card' : 'card glowing-card';
+                const card = document.createElement('div');
+                card.className = cardClass;
+                card.dataset.id = greeting.id;
 
-        function renderGreetings(greetings) {
-            GREETINGS_CONTAINER.innerHTML = '';
-            const sortedGreetings = greetings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            sortedGreetings.forEach(greeting => {
-                const greetingCard = document.createElement('div');
-                greetingCard.classList.add('greeting-card');
-                if (greeting.isGlowing) {
-                    greetingCard.classList.add('glowing');
-                }
-                const timestamp = new Date(greeting.timestamp).toLocaleString();
+                const hasReply = greeting.replies && greeting.replies.length > 0;
+                const replyButtonHtml = hasReply 
+                    ? `<button class="reply-btn" disabled>Respondido</button>`
+                    : `<button class="reply-btn" onclick="showReplyModal('${greeting.id}')">Responder</button>`;
                 
-                let adminControls = '';
-                const isMyMessage = greeting.name.toLowerCase() === '@elmendez_2.0';
-                
-                if (!isMyMessage) {
-                    adminControls = `
-                        <div class="admin-controls">
-                            <button class="edit-btn" data-id="${greeting.id}">Editar</button>
-                            <button class="toggle-glow-btn" data-id="${greeting.id}">Toggle Glow</button>
-                            <button class="delete-btn" data-id="${greeting.id}">Borrar</button>
-                        </div>
-                    `;
-                } else {
-                    adminControls = `
-                        <div class="admin-controls">
-                            <button class="toggle-glow-btn" data-id="${greeting.id}">Toggle Glow</button>
-                            <button class="delete-btn" data-id="${greeting.id}">Borrar</button>
-                        </div>
-                    `;
-                }
+                const repliesHtml = hasReply 
+                    ? `<div class="replies-container">
+                           <h4>Respuestas del Admin:</h4>
+                           ${greeting.replies.map(r => `<p><em>${r.message}</em> <small>(${new Date(r.timestamp).toLocaleDateString()})</small></p>`).join('')}
+                       </div>`
+                    : '';
 
-                let signature = '';
-                if (greeting.isGlowing) {
-                    signature = '<p class="signature-message">creado por @elmendez_2.0</p>';
-                }
-                
-                greetingCard.innerHTML = `
-                    <p class="author">${greeting.name}</p>
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="name">${greeting.name}</div>
+                        <div class="timestamp">${new Date(greeting.timestamp).toLocaleString()}</div>
+                    </div>
                     <p>${greeting.message}</p>
-                    <p class="timestamp">${timestamp}</p>
-                    <p class="message-id">ID: ${greeting.id}</p>
-                    ${signature}
-                    ${adminControls}
+                    ${repliesHtml}
+                    <div class="card-footer">
+                        <div class="like-container">
+                            <span class="like-count">${greeting.likes || 0}</span>
+                            <img src="https://img.icons8.com/material-outlined/24/ffffff/filled-like.png" alt="likes icon">
+                        </div>
+                        <div class="actions">
+                            ${replyButtonHtml}
+                            <button class="delete-btn" data-id="${greeting.id}">Eliminar</button>
+                        </div>
+                    </div>
                 `;
-                GREETINGS_CONTAINER.appendChild(greetingCard);
+                greetingsList.appendChild(card);
             });
-            
-            document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const id = e.target.dataset.id;
-                    if (confirm(`¿Estás seguro de que quieres borrar el saludo con ID: ${id}?`)) {
-                        runAdminAction('borrar', id);
-                    }
-                });
-            });
-            
-            document.querySelectorAll('.edit-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const id = e.target.dataset.id;
-                    const newMessage = prompt('Ingresa el nuevo mensaje:');
-                    if (newMessage) {
-                        runAdminAction('editar', id, { customMessage: newMessage });
-                    }
-                });
-            });
+            attachEventListeners();
+        }
 
-            document.querySelectorAll('.toggle-glow-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
+        function filterAndRenderGreetings() {
+            const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
+            let filteredGreetings = allGreetings;
+
+            if (activeFilter === 'replied') {
+                filteredGreetings = allGreetings.filter(g => g.replies && g.replies.length > 0);
+            } else if (activeFilter === 'pending') {
+                filteredGreetings = allGreetings.filter(g => !g.replies || g.replies.length === 0);
+            }
+
+            renderGreetings(filteredGreetings);
+        }
+
+        function attachEventListeners() {
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', async (e) => {
                     const id = e.target.dataset.id;
-                    runAdminAction('toggleGlow', id);
+                    if (confirm('¿Estás seguro de que quieres eliminar este saludo?')) {
+                        try {
+                            const response = await fetch('/api/admin', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ action: 'delete', id: id })
+                            });
+                            const data = await response.json();
+                            alert(data.message);
+                            fetchGreetings();
+                        } catch (error) {
+                            console.error('Error deleting greeting:', error);
+                            alert('Hubo un error al eliminar el saludo.');
+                        }
+                    }
                 });
             });
         }
+
+        // Nuevas funciones para el modal y los eventos
+        const REPLY_MODAL = document.getElementById('replyModal');
+        const REPLY_FORM = document.getElementById('replyForm');
+        const REPLY_ID_INPUT = document.getElementById('replyIdInput');
+        const REPLY_MESSAGE_INPUT = document.getElementById('replyMessageInput');
+        const CLOSE_BTN = document.querySelector('.modal-content .close-btn');
+        const HAMBURGER_MENU = document.getElementById('hamburger-menu');
+        const SIDEBAR = document.getElementById('sidebar');
+        const OVERLAY = document.getElementById('overlay');
+        const THEME_TOGGLE = document.getElementById('theme-toggle');
+        const EMOJIS_TOGGLE = document.getElementById('emojis-toggle');
+        const EXPAND_BTN = document.getElementById('expand-btn');
+        const CHANGELOG_CONTENT = document.getElementById('changelog-content');
+        const SEARCH_INPUT = document.getElementById('search-input');
+        const FILTER_BUTTONS = document.querySelectorAll('.filter-btn');
+
+        window.showReplyModal = (greetingId) => {
+            REPLY_ID_INPUT.value = greetingId;
+            REPLY_MODAL.classList.remove('hidden');
+            document.body.classList.add('modal-open');
+        };
+
+        const hideReplyModal = () => {
+            REPLY_MODAL.classList.add('hidden');
+            document.body.classList.remove('modal-open');
+            REPLY_MESSAGE_INPUT.value = '';
+        };
         
-        SUBMIT_BTN.addEventListener('click', () => {
-            const message = MESSAGE_INPUT.value.trim();
-            if (message) {
-                addGreeting(NAME_INPUT.value, message);
-            } else {
-                alert('Por favor, escribe un mensaje.');
+        CLOSE_BTN.addEventListener('click', hideReplyModal);
+        window.addEventListener('click', (event) => {
+            if (event.target === REPLY_MODAL) {
+                hideReplyModal();
             }
         });
-        
-        THEME_TOGGLE.addEventListener('click', () => {
-            document.body.classList.toggle('light-mode');
-            const isLightMode = document.body.classList.contains('light-mode');
-            localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
-            THEME_TOGGLE.textContent = isLightMode ? '🌙 Cambiar Tema' : '☀️ Cambiar Tema';
-        });
-        
-        EMOJI_TOGGLE.addEventListener('click', () => {
-            document.body.classList.toggle('emojis-disabled');
-            const areEmojisDisabled = document.body.classList.contains('emojis-disabled');
-            localStorage.setItem('emojis-disabled', areEmojisDisabled ? 'true' : 'false');
+
+        REPLY_FORM.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const replyId = REPLY_ID_INPUT.value;
+            const replyMessage = REPLY_MESSAGE_INPUT.value;
+
+            try {
+                const response = await fetch('/api/admin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'reply',
+                        id: replyId,
+                        reply_message: replyMessage
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('No se pudo enviar la respuesta.');
+                }
+
+                const data = await response.json();
+                alert('¡Respuesta enviada con éxito!');
+                hideReplyModal();
+                fetchGreetings();
+            } catch (error) {
+                console.error('Error al enviar la respuesta:', error);
+                alert('Hubo un error al enviar la respuesta. Por favor, inténtalo de nuevo.');
+            }
         });
 
+        // Search functionality
+        SEARCH_INPUT.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredGreetings = allGreetings.filter(g =>
+                g.name.toLowerCase().includes(searchTerm) ||
+                g.message.toLowerCase().includes(searchTerm) ||
+                g.id.toLowerCase().includes(searchTerm)
+            );
+            renderGreetings(filteredGreetings);
+        });
+
+        // Filter buttons functionality
+        FILTER_BUTTONS.forEach(btn => {
+            btn.addEventListener('click', () => {
+                FILTER_BUTTONS.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filterAndRenderGreetings();
+            });
+        });
+
+        // Sidebar and overlay functionality
         HAMBURGER_MENU.addEventListener('click', () => {
             SIDEBAR.classList.toggle('open');
             OVERLAY.classList.toggle('open');
@@ -712,7 +1002,23 @@
             HAMBURGER_MENU.classList.remove('open');
             document.body.classList.remove('menu-open');
         });
-        
+
+        // Theme and Emojis toggle
+        THEME_TOGGLE.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            const isLightMode = document.body.classList.contains('light-mode');
+            THEME_TOGGLE.classList.toggle('active', isLightMode);
+            localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
+        });
+
+        EMOJIS_TOGGLE.addEventListener('click', () => {
+            document.body.classList.toggle('emojis-disabled');
+            const areEmojisDisabled = document.body.classList.contains('emojis-disabled');
+            EMOJIS_TOGGLE.classList.toggle('active', areEmojisDisabled);
+            localStorage.setItem('emojis-disabled', areEmojisDisabled ? 'true' : 'false');
+        });
+
+        // Changelog expand button
         EXPAND_BTN.addEventListener('click', () => {
             CHANGELOG_CONTENT.classList.toggle('expanded');
             if (CHANGELOG_CONTENT.classList.contains('expanded')) {
@@ -721,6 +1027,39 @@
                 EXPAND_BTN.textContent = 'Expandir';
             }
         });
+
+        window.onload = () => {
+            // Load saved theme and emoji settings
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                THEME_TOGGLE.classList.add('active');
+            }
+            const emojisDisabled = localStorage.getItem('emojis-disabled');
+            if (emojisDisabled === 'true') {
+                document.body.classList.add('emojis-disabled');
+                EMOJIS_TOGGLE.classList.add('active');
+            }
+
+            // Fetch initial greetings and set interval for updates
+            fetchGreetings();
+            setInterval(fetchGreetings, 10000);
+        };
     </script>
+
+    <div id="replyModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Responder a Saludo</h2>
+            <form id="replyForm" class="form-container">
+                <input type="hidden" id="replyIdInput">
+                <div class="form-group">
+                    <label for="replyMessageInput">Tu Respuesta:</label>
+                    <textarea id="replyMessageInput" placeholder="Escribe tu respuesta aquí..." required></textarea>
+                </div>
+                <button type="submit" class="send-btn">Enviar Respuesta</button>
+            </form>
+        </div>
+    </div>
 </body>
-</html
+</html>
