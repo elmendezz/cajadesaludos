@@ -3,70 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chismes en 4K - @elmendez_2.0</title>
+    <title>Chismes en 4K - elmendezz</title>
     <style>
         /* Version: 15 */
         /* Change Log:
          * - Se corrige el error de "página cortada" y se ajusta el CSS para una mejor visualización.
          * - Se ajusta la posición del menú para que no cause problemas de superposición.
          */
-         
-                 .reply-to {
-            background-color: var(--card-bg);
-            border-left: 3px solid var(--accent-color);
-            padding: 8px 12px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            font-size: 0.9em;
-            color: var(--text-color);
-        }
-
-        .reply-to-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        replyToContainer {
-            padding: 10px;
-            background: var(--form-bg);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        replyToContainer p {
-            margin: 0;
-            font-size: 0.9em;
-            color: var(--text-color);
-        }
-
-        cancelReplyBtn {
-            background: none;
-            border: none;
-            color: var(--accent-color);
-            font-weight: bold;
-            cursor: pointer;
-            margin-left: 10px;
-            padding: 2px;
-        }
-
-        .reply-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85em;
-            transition: background-color 0.3s;
-            margin-left: 5px;
-        }
-
-        .reply-btn:hover {
-            background-color: var(--primary-darker-color);
-        }
-        
         :root {
             --bg-color-dark: #1a1a1a;
             --container-bg-dark: #222;
@@ -733,9 +676,9 @@
 
     <div class="container">
         <header>
-            <div class="controls">
-                <div class="menu-toggle-btn">☰</div>
-
+ <div class="controls">
+ 	    <div class="menu-toggle-btn">☰</div>
+ 
                 <div class="search-container">
                     <input type="text" id="searchInput" placeholder="Buscar ...">
                 </div>
@@ -747,12 +690,6 @@
 
         <div class="form-container">
             <form id="greetingForm">
-                <div class="form-group" id="replyToContainer" style="display: none;">
-                    <p>Respondiendo a: <span id="replyToMessage"></span>
-                        <button type="button" id="cancelReplyBtn">X</button>
-                    </p>
-                </div>
-                <input type="hidden" id="replyToId" value="">
                 <div class="form-group">
                     <label for="nameInput">Tu Nombre *No Obligatorio* :</label>
                     <input type="text" id="nameInput" placeholder="Escribe tu nombre o alias">
@@ -793,15 +730,11 @@
         </footer>
     </div>
 <script>
-        // BOT Version: 16
+        // BOT Version: 15
         // Dependencias: Ninguna.
         // Change Log:
-        // - Se añade la funcionalidad de replies.
-        // - Se modifica el renderizado de los mensajes para mostrar el contenido al que se responde.
-        // - Se añade el botón de "Responder" a cada tarjeta de mensaje.
-        // - Se actualiza la función de envío de mensajes para incluir un replyToId.
-        // - Se añade un contenedor en el HTML para mostrar a qué mensaje se está respondiendo.
-        // - Se añade un botón para cancelar la respuesta.
+        // - Se corrige el error de "página cortada" y se ajusta el CSS del menú.
+        // - Se ajusta la posición del menú para que no cause problemas de superposición.
         
         const API_URL = '/api/greetings.js';
         const LIKE_API_URL = '/api/like.js';
@@ -820,10 +753,7 @@
         const TAB_BUTTONS = document.querySelectorAll('.tab-btn');
         const CHANGELOG_CONTENT = document.getElementById('changelog-content');
         const EXPAND_BTN = document.getElementById('expand-btn');
-        const REPLY_TO_CONTAINER = document.getElementById('replyToContainer');
-        const REPLY_TO_MESSAGE = document.getElementById('replyToMessage');
-        const CANCEL_REPLY_BTN = document.getElementById('cancelReplyBtn');
-        const REPLY_TO_ID_INPUT = document.getElementById('replyToId');
+        
 
         let allGreetings = [];
         let likedGreetings = JSON.parse(localStorage.getItem('likedGreetings')) || {};
@@ -855,23 +785,18 @@
             renderGreetings(filteredGreetings);
         }
 
-        async function postGreeting(name, message, replyToId) {
+        async function postGreeting(name, message) {
             try {
-                const payload = { name, message };
-                if (replyToId) {
-                    payload.replyToId = replyToId;
-                }
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ name, message })
                 });
                 if (!response.ok) {
                     throw new Error('Error al enviar el saludo.');
                 }
                 alert('Saludo enviado con éxito.');
-                await fetchGreetings();
-                cancelReply();
+                await fetchGreetings(); // Actualizar la lista
             } catch (e) {
                 console.error('Error:', e);
                 alert('Hubo un error al enviar el saludo. Inténtalo de nuevo.');
@@ -905,22 +830,6 @@
             }
         }
 
-        function startReply(greetingId) {
-            const greeting = allGreetings.find(g => g.id === greetingId);
-            if (greeting) {
-                REPLY_TO_ID_INPUT.value = greeting.id;
-                REPLY_TO_MESSAGE.textContent = greeting.message.substring(0, 50) + '...';
-                REPLY_TO_CONTAINER.style.display = 'block';
-                MESSAGE_INPUT.focus();
-            }
-        }
-
-        function cancelReply() {
-            REPLY_TO_ID_INPUT.value = '';
-            REPLY_TO_MESSAGE.textContent = '';
-            REPLY_TO_CONTAINER.style.display = 'none';
-        }
-
         function renderGreetings(greetings) {
             GREETINGS_LIST.innerHTML = '';
             greetings.forEach(g => {
@@ -930,17 +839,7 @@
                 const isLiked = likedGreetings[g.id];
                 const likeClass = isLiked ? 'liked' : '';
                 
-                let replyContent = '';
-                if (g.replyToId) {
-                    const parentGreeting = allGreetings.find(p => p.id === g.replyToId);
-                    if (parentGreeting) {
-                        const parentMessage = parentGreeting.message.substring(0, 50) + '...';
-                        replyContent = `<div class="reply-to">Respondiendo a: "${parentMessage}"</div>`;
-                    }
-                }
-
                 li.innerHTML = `
-                    ${replyContent}
                     <div class="greeting-content">
                         <p class="greeting-message">${g.message}</p>
                         <p class="greeting-signature">- ${g.name}</p>
@@ -950,13 +849,13 @@
                                 <span>${g.likes || 0}</span>
                             </button>
                             <button class="info-btn" data-id="${g.id}">Información</button>
-                            <button class="reply-btn" data-id="${g.id}">Responder</button>
                         </div>
                     </div>
                 `;
                 GREETINGS_LIST.appendChild(li);
             });
 
+            // Añadir eventos a los nuevos botones
             document.querySelectorAll('.like-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const id = e.currentTarget.dataset.id;
@@ -971,13 +870,6 @@
                     if (greeting) {
                         showInfoModal(greeting);
                     }
-                });
-            });
-
-            document.querySelectorAll('.reply-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const id = e.currentTarget.dataset.id;
-                    startReply(id);
                 });
             });
         }
@@ -995,9 +887,8 @@
             e.preventDefault();
             const name = NAME_INPUT.value.trim() || 'Usuario Anónimo';
             const message = MESSAGE_INPUT.value.trim();
-            const replyToId = REPLY_TO_ID_INPUT.value.trim();
             if (message) {
-                await postGreeting(name, message, replyToId);
+                await postGreeting(name, message);
                 NAME_INPUT.value = '';
                 MESSAGE_INPUT.value = '';
             } else {
@@ -1042,10 +933,6 @@
             INFO_MODAL.style.display = 'none';
         });
 
-        CANCEL_REPLY_BTN.addEventListener('click', () => {
-            cancelReply();
-        });
-
         window.onclick = function(event) {
             if (event.target == INFO_MODAL) {
                 INFO_MODAL.style.display = 'none';
@@ -1085,4 +972,5 @@
         };
     </script>
 </body>
+
 </html>
