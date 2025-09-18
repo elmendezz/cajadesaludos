@@ -1,6 +1,6 @@
-# 📦 Caja de Saludos
+# 📦 Chismes En 4k (Beta Ver)
 
-**Version:** 1.0.0
+**Version:** BETA
 
 Una cajita de saludos simple para Vercel, ideal para dejar mensajes con buena vibra. ✨
 
@@ -75,4 +75,5 @@ Aquí están los cambios de los archivos JavaScript.
 ## ⚙️ Notas Adicionales
 
 * Las dependencias de los archivos `.js` se manejan a través de Vercel y la API de GitHub.
+
 
