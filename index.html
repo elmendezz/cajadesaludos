@@ -896,6 +896,36 @@
             }
         });
 
+let showReplies = false;
+
+function renderGreetings(greetings) {
+    GREETINGS_LIST.innerHTML = '';
+    greetings.forEach(g => {
+        const li = document.createElement('li');
+        li.classList.add('greeting-card');
+        li.innerHTML = `
+            <div class="greeting-content">
+                <p class="greeting-message">${g.message}</p>
+                <p class="greeting-signature">-${g.name || "Anónimo"}</p>
+                ${showReplies && g.reply ? `
+                    <div class="admin-reply" style="margin-top:10px; padding:10px; border-radius:8px; background:#222; border:1px solid #3e66f0;">
+                        <strong>👑 Respuesta del Admin:</strong>
+                        <p>${g.reply}</p>
+                    </div>` : ''}
+            </div>
+        `;
+        GREETINGS_LIST.appendChild(li);
+    });
+}
+
+const TOGGLE_REPLIES_BTN = document.getElementById('toggleRepliesBtn');
+TOGGLE_REPLIES_BTN.addEventListener('click', () => {
+    showReplies = !showReplies;
+    TOGGLE_REPLIES_BTN.textContent = showReplies ? "Ocultar respuestas del administrador" : "Ver respuestas del administrador";
+    filterAndRenderGreetings();
+});
+
+
         THEME_TOGGLE_BTN.addEventListener('click', () => {
             document.body.classList.toggle('light-mode');
             const isLightMode = document.body.classList.contains('light-mode');
