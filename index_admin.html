@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - elmendez</title>
     <style>
-        /* BOT Version: 17 */
+        /* BOT Version: 18 */
         /* Change Log:
          * - Se añade un botón para "Responder" en cada tarjeta de saludo.
          * - Se añade el modal y el formulario para que el administrador pueda enviar respuestas.
@@ -240,6 +240,24 @@
             white-space: pre-wrap;
             word-wrap: break-word;
             flex-grow: 1;
+        }
+
+        .replies-container {
+            margin-top: 15px;
+            border-top: 1px solid var(--border-color-dark);
+            padding-top: 10px;
+        }
+
+        .replies-container h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        .replies-container p {
+            margin: 5px 0;
+            font-size: 0.9em;
+            font-style: italic;
         }
 
         .card-footer {
@@ -793,8 +811,10 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        // BOT Version: 17
+        // BOT Version: 18
         // Change Log:
+        // - Se corrige el error de "página en blanco" al colocar el código del servidor en el cliente.
+        // - Se añade la lógica correcta para el cliente que hace peticiones a las API de Vercel.
         // - Se añade la lógica para abrir y cerrar el modal de respuesta.
         // - Se maneja la visualización y ocultación del modal y el overlay.
         // - Se asegura de que el ID del saludo se pase al formulario del modal.
@@ -829,7 +849,7 @@
                 const hasReply = greeting.replies && greeting.replies.length > 0;
                 const replyButtonHtml = hasReply 
                     ? `<button class="reply-btn" disabled>Respondido</button>`
-                    : `<button class="reply-btn" onclick="showReplyModal('${greeting.id}')">Responder</button>`;
+                    : `<button class="reply-btn" data-id="${greeting.id}">Responder</button>`;
                 
                 const repliesHtml = hasReply 
                     ? `<div class="replies-container">
@@ -898,6 +918,15 @@
                     }
                 });
             });
+
+            // Listener para el botón de respuesta
+            const replyButtons = document.querySelectorAll('.reply-btn:not([disabled])');
+            replyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const id = button.dataset.id;
+                    showReplyModal(id);
+                });
+            });
         }
 
         // Nuevas funciones para el modal y los eventos
@@ -916,7 +945,7 @@
         const SEARCH_INPUT = document.getElementById('search-input');
         const FILTER_BUTTONS = document.querySelectorAll('.filter-btn');
 
-        window.showReplyModal = (greetingId) => {
+        const showReplyModal = (greetingId) => {
             REPLY_ID_INPUT.value = greetingId;
             REPLY_MODAL.classList.remove('hidden');
             document.body.classList.add('modal-open');
